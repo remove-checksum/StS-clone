@@ -7,26 +7,18 @@ const roundStore = useRoundStore()
 
 function drawOne() {
 	roundStore.__roundNonReactive.deck.draw(1)
-	roundStore.__syncDeck()
-}
-function discardOne(cardIndex: number) {
-	roundStore.__roundNonReactive.deck.discardAt(cardIndex)
-	roundStore.__syncDeck()
 }
 function discardHand() {
 	while (roundStore.__roundNonReactive.deck.hand.length > 0) {
 		roundStore.__roundNonReactive.deck.discardAt(0)
 	}
-	roundStore.__syncDeck()
 }
 function shuffle() {
 	discardHand()
 	roundStore.__roundNonReactive.deck.draw(Defaults.Draw)
-	roundStore.__syncDeck()
 }
 function addPlayerResource() {
 	roundStore.__roundNonReactive.player.resource += 1
-	roundStore.__syncDeck()
 }
 </script>
 <template>

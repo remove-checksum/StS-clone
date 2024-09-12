@@ -1,22 +1,35 @@
 import { defineStore } from 'pinia'
-import { computed, reactive, ref, shallowReactive, shallowRef } from 'vue'
+import { reactive, ref } from 'vue'
 import { cards } from '@/model/cards.json'
 import type { Card } from './round'
 import { Character } from '@/model/character'
 import { GameRound, Defaults } from '@/model/round'
 
-function delay(ms: number) {
-	return new Promise((res) => setTimeout(res, ms))
-}
-
 function makeRound() {
-	const player = new Character('Player', 10, 20, { block: 4 })
+	const player = new Character('Clad', 10, 20, { block: 4 })
 	const enemies = new Map([
-		['bibi', new Character('Bibi', Defaults.Resource, Defaults.Health, { block: 4 })],
-		['boba', new Character('Boba')]
+		['wurm', new Character('Wurm', Defaults.Resource, Defaults.Health, { block: 4 })],
+		['gremlin', new Character('Gremlin')]
 	])
 
-	const roundCards = [cards[1], cards[2], cards[3], cards[4], cards[6], cards[7]]
+	const [strike, block, heave, scan, heavyStrike, stab, whoops] = cards
+
+	const roundCards = [
+		strike,
+		strike,
+		strike,
+		strike,
+		strike,
+		block,
+		block,
+		block,
+		block,
+		heave,
+		scan,
+		heavyStrike,
+		stab,
+		whoops
+	]
 
 	const round = new GameRound(player, enemies, roundCards as Array<Card>)
 	return round
@@ -29,34 +42,32 @@ export type { Card } from '@/model/card'
 export const useRoundStore = defineStore('game', () => {
 	const __roundNonReactive = round
 
-	const deck = shallowReactive({
-		hand: round.deck.hand,
-		drawPile: round.deck.drawPile,
-		discardPile: round.deck.discardPile
-	})
+	const deck = reactive(round.deck)
 	const player = ref(round.player)
 	const enemies = ref(round.enemies)
 
 	const selectedEnemyKey = ref(round.selectedEnemyKey)
 
-	function __syncDeck() {
-		deck.discardPile = __roundNonReactive.deck.discardPile
-		deck.drawPile = __roundNonReactive.deck.drawPile
-		deck.hand = __roundNonReactive.deck.hand
-	}
+	// function __syncDeck() {
+	// 	deck.discardPile = __roundNonReactive.deck.discardPile
+	// 	deck.drawPile = __roundNonReactive.deck.drawPile
+	// 	deck.hand = __roundNonReactive.deck.hand
+	// }
 
 	function playCard(position: number) {
 		round.tryPlayFromHand(position)
-		__syncDeck()
 	}
 
 	function getCardById(id: number) {
-		return round.deck.cardById(id)
+		return deck.cardById(id)
+	}
+
+	function cardInHandAt(index: number) {
+		return deck.cardInHandAt(index)
 	}
 
 	function startRound() {
-		round.deck.draw(Defaults.Draw)
-		__syncDeck()
+		deck.draw(Defaults.Draw)
 	}
 
 	function changeSelectedEnemy(enemyKey: string) {
@@ -64,12 +75,6 @@ export const useRoundStore = defineStore('game', () => {
 		selectedEnemyKey.value = round.selectedEnemyKey
 	}
 
-	function endTurn() {
-		round.turnEnd()
-		round.enemyTurn()
-		round.turnStart()
-		__syncDeck()
-	}
 
 	return {
 		__roundNonReactive,
@@ -77,11 +82,10 @@ export const useRoundStore = defineStore('game', () => {
 		player,
 		enemies,
 		selectedEnemyKey,
-		__syncDeck,
 		getCardById,
+		getCardByHandIndex: cardInHandAt,
 		changeSelectedEnemy,
 		playCard,
-		endTurn,
 		startRound
 	}
 })

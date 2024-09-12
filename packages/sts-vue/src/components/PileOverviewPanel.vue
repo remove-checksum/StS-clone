@@ -11,6 +11,10 @@ const props = defineProps<{
 	kind: PileKind
 }>()
 
+defineOptions({
+	inheritAttrs: false
+})
+
 const roundStore = useRoundStore()
 const state = ref<OverviewState>('closed')
 
@@ -28,10 +32,11 @@ const cardsByPileKind = computed(() => {
 const cardCountTitle = computed(() => {
 	return cardsByPileKind.value.length > 0 ? `${cardsByPileKind.value.length} cards` : 'None'
 })
+
 </script>
 
 <template>
-	<div class="basis-2/12 bg-blue-400 p-8">
+	<div class="bg-blue-400 p-8" :class="$attrs.class">
 		<BaseButton @click="state = kind"><slot></slot> | {{ cardCountTitle }}</BaseButton>
 	</div>
 	<Teleport to="#teleports" v-if="state !== 'closed'">

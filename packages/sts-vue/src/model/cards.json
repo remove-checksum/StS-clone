@@ -1,20 +1,20 @@
 {
-	"cards": {
-		"1": {
+	"cards": [
+		{
 			"id": 1,
 			"name": "Strike",
 			"description": "Deal 6 damage",
 			"cost": 1,
 			"effect": [{ "kind": "damage", "amount": 6 }]
 		},
-		"2": {
+		{
 			"id": 2,
 			"name": "Defend",
 			"description": "Gain 5 shield",
 			"cost": 1,
 			"effect": [{ "kind": "shield", "amount": 5 }]
 		},
-		"3": {
+		{
 			"id": 3,
 			"name": "Heave",
 			"description": "Lose 2 health, deal 12 damage",
@@ -30,7 +30,7 @@
 				}
 			]
 		},
-		"4": {
+		{
 			"id": 4,
 			"name": "Scan",
 			"description": "Draw two cards",
@@ -42,26 +42,26 @@
 				}
 			]
 		},
-		"5": {
+		{
 			"id": 5,
 			"name": "Heavy strike",
 			"description": "Deal 13 damage",
 			"cost": 2,
 			"effect": [{ "kind": "damage", "amount": 8 }]
 		},
-		"6": {
+		{
 			"id": 6,
 			"name": "Stab",
 			"description": "Deal 6 piercing damage",
 			"cost": 2,
 			"effect": [{ "kind": "pierce", "amount": 6 }]
 		},
-		"7": {
+		{
 			"id": 7,
 			"name": "Whoops",
 			"description": "Lose 3 health",
 			"cost": 1,
 			"effect": [{ "kind": "selfDamage", "amount": 3 }]
 		}
-	}
+	]
 }

@@ -28,7 +28,7 @@ export class GameRound<T extends string> {
 	 * @returns was played succesfully
 	 */
 	tryPlayFromHand(position: number) {
-		const cardId = this.deck._hand.at(position)
+		const cardId = this.deck.hand.at(position)
 
 		if (!cardId) {
 			console.error(`No card in hand at position ${position}`)
@@ -65,8 +65,8 @@ export class GameRound<T extends string> {
 	}
 
 	turnEnd() {
-		while (this.deck._hand.length > 0) {
-			this.deck.discardAt(this.deck._hand.length - 1)
+		while (this.deck.hand.length > 0) {
+			this.deck.discardAt(this.deck.hand.length - 1)
 		}
 
 		this.turn = 'player'

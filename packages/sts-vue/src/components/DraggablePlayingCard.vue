@@ -27,10 +27,8 @@ const isDragged = ref(false)
 const isOverHand = ref(true)
 const cardPosition = ref<{ x: number; y: number } | null>(null)
 const dragCursorOffset = ref<Point>({ x: 0, y: 0 })
-const dragPreviewAboveCard = ref(false)
-const hoverCursorOffset = ref<Point>({ x: 0, y: 0 })
 
-const { apply } = useMotion(cardWrapper, {
+useMotion(cardWrapper, {
 	initial: {
 		translateY: 0
 	},
@@ -66,10 +64,7 @@ onMounted(() => {
 			emit('cardPicked', props.index)
 		},
 		onDrag: (args) => {
-			const {
-				input,
-				dropTargets: [maybeCardHand]
-			} = args.location.current
+			const { input } = args.location.current
 
 			cardPosition.value = {
 				x: input.clientX - dragCursorOffset.value.x / CARD_HOVER_SCALE,
@@ -88,28 +83,8 @@ onMounted(() => {
 
 <template>
 	<div class="relative min-w-12 lg:min-w-36" ref="cardWrapper">
-		<PlayingCard
-			:card="$props.card"
-			:index="$props.index"
-			:selected="isDragged"
-			ref="cardRef"
-			:class="['absolute', isDragged && 'w-0 opacity-0']"
-		>
+		<PlayingCard :card="$props.card" :index="$props.index" :selected="isDragged" ref="cardRef"
+			:class="['absolute', isDragged && 'w-0 opacity-0']">
 		</PlayingCard>
 	</div>
 </template>
-
-<style lang="css" module>
-/* .draggableTransition {
-	transition:
-		flex-basis 0.1s ease-in,
-		z-index 0.1s 0.4s ease-in,
-		transform 0.1s ease-in;
-}
-
-.draggableTransition:hover {
-	transform: translateY(-1.5rem);
-	transition: z-index 0ms 0ms;
-	z-index: 10;
-} */
-</style>

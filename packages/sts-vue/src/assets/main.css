@@ -1,0 +1,15 @@
+@import './base.css';
+
+@keyframes card3dRotation {
+	0% {
+		transform: rotate3d(1, 1, 0, 0);
+	}
+
+	50% {
+		transform: rotate3d(1, 1, 0, 30deg);
+	}
+
+	100% {
+		transform: rotate3d(1, 1, 0, 0);
+	}
+}

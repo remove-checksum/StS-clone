@@ -71,34 +71,69 @@ onMounted(() => {
 
 <template>
 	<div class="grid grid-cols-12 min-h-24 justify-between lg:min-h-56">
-		<PileOverviewPanel kind="draw" class="col-span-2">Draw Pile</PileOverviewPanel>
-		<div :class="[
-			'col-span-8 flex',
-			isDraggedOver && 'bg-sky-400',
-			$style.cardHandClipping,
-		]" ref="cardDropTarget">
-			<DraggablePlayingCard v-for="(cardId, index) of roundStore.deck.hand" :key="index" :index="index"
-				:card="roundStore.getCardById(cardId)!" @card-picked="cardPicked" @card-dropped="cardDropped"
-				@card-moved="cardMoved" class="first:ml-auto last:mr-auto min-w-0" @click="toggleCardSelect(index)">
+		<PileOverviewPanel
+			kind="draw"
+			class="col-span-2"
+		>Draw Pile</PileOverviewPanel>
+		<div
+			ref="cardDropTarget"
+			:class="[
+				'col-span-8 flex',
+				isDraggedOver && 'bg-sky-400',
+				$style.cardHandClipping,
+			]"
+		>
+			<DraggablePlayingCard
+				v-for="(cardId, index) of roundStore.deck.hand"
+				:key="index"
+				:index="index"
+				:card="roundStore.getCardById(cardId)!"
+				class="first:ml-auto last:mr-auto min-w-0"
+				@card-picked="cardPicked"
+				@card-dropped="cardDropped"
+				@card-moved="cardMoved"
+				@click="toggleCardSelect(index)"
+			>
 			</DraggablePlayingCard>
 		</div>
-		<PileOverviewPanel kind="discard" class="col-span-2">Discard Pile</PileOverviewPanel>
+		<PileOverviewPanel
+			kind="discard"
+			class="col-span-2"
+		>Discard Pile</PileOverviewPanel>
 	</div>
-	<Teleport to="#teleports" v-if="draggedCard && draggedCardStyleString.length > 0">
-		<PlayingCard :card="draggedCard" :selected="true" :style="draggedCardStyleString"
-			class="pointer-events-none fixed" />
+	<Teleport
+		v-if="draggedCard && draggedCardStyleString.length > 0"
+		to="#teleports"
+	>
+		<PlayingCard
+			:card="draggedCard"
+			:selected="true"
+			:style="draggedCardStyleString"
+			class="pointer-events-none fixed"
+		/>
 	</Teleport>
-	<Teleport to="#teleports" v-if="selectedCard">
-		<MotionComponent :enter="{
-			translateX: '50%',
-			translateY: '50%',
-			opacity: 1
-		}" :initial="{
-			translateX: '50%',
-			translateY: '70%',
-			opacity: 0
-		}">
-			<PlayingCard :card="selectedCard" :selected="true" @click="toggleCardSelect" ref="cardSelectGhost"></PlayingCard>
+	<Teleport
+		v-if="selectedCard"
+		to="#teleports"
+	>
+		<MotionComponent
+			:enter="{
+				translateX: '50%',
+				translateY: '50%',
+				opacity: 1
+			}"
+			:initial="{
+				translateX: '50%',
+				translateY: '70%',
+				opacity: 0
+			}"
+		>
+			<PlayingCard
+				ref="cardSelectGhost"
+				:card="selectedCard"
+				:selected="true"
+				@click="toggleCardSelect"
+			></PlayingCard>
 		</MotionComponent>
 	</Teleport>
 </template>

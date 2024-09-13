@@ -32,12 +32,12 @@ function addPlayerResource() {
 						debugPopup: $route.query.debugPopup === 'open' ? 'closed' : 'open'
 					}
 				})
-			"
-			>Debug: {{ $route.query.debugPopup === 'open' ? 'On' : 'Off' }}
+				"
+		>Debug: {{ $route.query.debugPopup === 'open' ? 'On' : 'Off' }}
 		</BaseButton>
 		<div
-			class="absolute z-10 flex flex-col gap-2 border border-black bg-gray-50 p-2"
 			v-if="$route.query.debugPopup === 'open'"
+			class="absolute z-10 flex flex-col gap-2 border border-black bg-gray-50 p-2"
 		>
 			<BaseButton @click="discardHand">Discard Hand</BaseButton>
 			<BaseButton @click="drawOne">Draw One</BaseButton>

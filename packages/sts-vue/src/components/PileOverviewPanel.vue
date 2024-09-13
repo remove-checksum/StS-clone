@@ -36,27 +36,36 @@ const cardCountTitle = computed(() => {
 </script>
 
 <template>
-	<div class="bg-blue-400 p-8" :class="$attrs.class">
-		<BaseButton @click="state = kind"><slot></slot> | {{ cardCountTitle }}</BaseButton>
+	<div
+		class="bg-blue-400 p-8"
+		:class="$attrs.class"
+	>
+		<BaseButton @click="state = kind">
+			<slot></slot> | {{ cardCountTitle }}
+		</BaseButton>
 	</div>
-	<Teleport to="#teleports" v-if="state !== 'closed'">
+	<Teleport
+		v-if="state !== 'closed'"
+		to="#teleports"
+	>
 		<div
 			class="fixed left-0 top-0 h-full w-full bg-black bg-opacity-50"
 			@click.self="state = 'closed'"
 		>
-			<section
-				class="fixed left-[10%] top-[12vh] h-4/5 w-4/5 border-2 border-black bg-zinc-300 p-4"
-			>
-				<h2><slot></slot></h2>
+			<section class="fixed left-[10%] top-[12vh] h-4/5 w-4/5 border-2 border-black bg-zinc-300 p-4">
+				<h2>
+					<slot></slot>
+				</h2>
 				<div class="flex flex-row gap-2">
 					<PlayingCard
 						v-for="(cardId, index) of cardsByPileKind"
+						:key="cardId"
 						:card="roundStore.getCardById(cardId)!"
 						:index="index"
-						:key="cardId"
 						:selected="false"
 					></PlayingCard>
 				</div>
-			</section></div
-	></Teleport>
+			</section>
+		</div>
+	</Teleport>
 </template>

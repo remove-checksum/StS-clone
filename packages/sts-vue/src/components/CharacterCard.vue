@@ -3,13 +3,28 @@
 		<h4 class="text-xl">{{ target.name }}</h4>
 		<div class="flex items-start">
 			<StatusIcon :stat="target.resource">
-				<Circle class="text-blue-400" :class="iconSizing" :inline="true" />
+				<Circle
+					class="text-blue-400"
+					:class="iconSizing"
+					:inline="true"
+				/>
 			</StatusIcon>
 			<StatusIcon :stat="target.health">
-				<Heart class="text-pink-800" :class="iconSizing" :inline="true" />
+				<Heart
+					class="text-pink-800"
+					:class="iconSizing"
+					:inline="true"
+				/>
 			</StatusIcon>
-			<StatusIcon v-for="[kind, amount] of target.statuses.entries()" :key="kind" :stat="amount">
-				<component :is="iconStatusMap[kind][0]" :class="[iconStatusMap[kind][1], iconSizing]" />
+			<StatusIcon
+				v-for="[kind, amount] of target.statuses.entries()"
+				:key="kind"
+				:stat="amount"
+			>
+				<component
+					:is="iconStatusMap[kind][0]"
+					:class="[iconStatusMap[kind][1], iconSizing]"
+				/>
 			</StatusIcon>
 		</div>
 		<hr class="border-b-2 border-gray-700" />

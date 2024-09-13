@@ -60,9 +60,9 @@ onMounted(() => {
 			</div>
 			<div>
 				<div
+					ref="cardPlayDropZone"
 					class="grid h-1/2 w-full place-self-center border-black bg-zinc-400"
 					:class="{ 'border-dotted': cardEnteredDropZone }"
-					ref="cardPlayDropZone"
 				>
 					<h3 v-if="cardEnteredDropZone" class="place-self-center text-3xl">Drop</h3>
 				</div>
@@ -71,9 +71,9 @@ onMounted(() => {
 				<h3 class="text-center text-2xl">Enemies</h3>
 				<template v-for="[key, target] of roundStore.enemies.entries()" :key="key">
 					<CharacterCard
-						@click="changeSelectedEnemy(key)"
 						:selected="roundStore.selectedEnemyKey === key"
 						:target="target"
+						@click="changeSelectedEnemy(key)"
 					></CharacterCard>
 				</template>
 			</div>

@@ -82,9 +82,17 @@ onMounted(() => {
 </script>
 
 <template>
-	<div class="relative min-w-12 lg:min-w-36" ref="cardWrapper">
-		<PlayingCard :card="$props.card" :index="$props.index" :selected="isDragged" ref="cardRef"
-			:class="['absolute', isDragged && 'w-0 opacity-0']">
+	<div
+		ref="cardWrapper"
+		class="relative min-w-12 lg:min-w-36"
+	>
+		<PlayingCard
+			ref="cardRef"
+			:card="$props.card"
+			:index="$props.index"
+			:selected="isDragged"
+			:class="['absolute', isDragged && 'w-0 opacity-0']"
+		>
 		</PlayingCard>
 	</div>
 </template>

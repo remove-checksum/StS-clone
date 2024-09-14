@@ -24,8 +24,6 @@ const cardRef = ref<InstanceType<typeof PlayingCard> | null>(null)
 const cardWrapper = ref<HTMLDivElement | null>(null)
 
 const isDragged = ref(false)
-const isOverHand = ref(true)
-const cardPosition = ref<{ x: number; y: number } | null>(null)
 const dragCursorOffset = ref<Point>({ x: 0, y: 0 })
 
 useMotion(cardWrapper, {
@@ -66,14 +64,12 @@ onMounted(() => {
 		onDrag: (args) => {
 			const { input } = args.location.current
 
-			cardPosition.value = {
+			emit('cardMoved', {
 				x: input.clientX - dragCursorOffset.value.x / CARD_HOVER_SCALE,
 				y: input.clientY - dragCursorOffset.value.y / CARD_HOVER_SCALE
-			}
-			emit('cardMoved', cardPosition.value)
+			})
 		},
 		onDrop: () => {
-			isOverHand.value = true
 			isDragged.value = false
 			emit('cardDropped')
 		}
@@ -89,7 +85,6 @@ onMounted(() => {
 		<PlayingCard
 			ref="cardRef"
 			:card="$props.card"
-			:index="$props.index"
 			:selected="isDragged"
 			:class="['absolute', isDragged && 'w-0 opacity-0']"
 		>

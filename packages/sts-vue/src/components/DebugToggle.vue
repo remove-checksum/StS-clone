@@ -2,8 +2,21 @@
 import BaseButton from './BaseButton.vue'
 import { useRoundStore } from '@/stores/round'
 import { Defaults } from '@/model/round'
+import { useRoute, useRouter } from 'vue-router';
+import { computed } from 'vue';
 
 const roundStore = useRoundStore()
+const route = useRoute()
+const router = useRouter()
+
+const debugPopup = computed({
+	get() {
+		return route.query?.debugPopup === 'open'
+	},
+	set(status: boolean) {
+		router.replace({ query: { debugPopup: status ? 'open' : 'closed' } })
+	}
+})
 
 function drawOne() {
 	roundStore.__roundNonReactive.deck.draw(1)
@@ -25,18 +38,11 @@ function addPlayerResource() {
 	<div class="w-40">
 		<BaseButton
 			:class="$route.query.debugPopup === 'open' ? '[&&]:bg-green-500' : '[&&]:bg-red-500'"
-			@click="
-				$router.replace({
-					path: $route.path,
-					query: {
-						debugPopup: $route.query.debugPopup === 'open' ? 'closed' : 'open'
-					}
-				})
-				"
+			@click="debugPopup = !debugPopup"
 		>Debug: {{ $route.query.debugPopup === 'open' ? 'On' : 'Off' }}
 		</BaseButton>
 		<div
-			v-if="$route.query.debugPopup === 'open'"
+			v-if="debugPopup"
 			class="absolute z-10 flex flex-col gap-2 border border-black bg-gray-50 p-2"
 		>
 			<BaseButton @click="discardHand">Discard Hand</BaseButton>

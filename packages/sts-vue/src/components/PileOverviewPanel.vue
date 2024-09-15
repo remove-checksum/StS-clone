@@ -3,6 +3,7 @@ import { useRoundStore } from '@/stores/round'
 import BaseButton from './BaseButton.vue'
 import PlayingCard from './PlayingCard.vue'
 import { computed, ref } from 'vue'
+import DndOverlayTeleport from './DndOverlayTeleport.vue';
 
 type PileKind = 'draw' | 'discard'
 type OverviewState = PileKind | 'closed'
@@ -44,10 +45,7 @@ const cardCountTitle = computed(() => {
 			<slot></slot> | {{ cardCountTitle }}
 		</BaseButton>
 	</div>
-	<Teleport
-		v-if="state !== 'closed'"
-		to="#teleports"
-	>
+	<DndOverlayTeleport v-if="state !== 'closed'">
 		<div
 			class="fixed left-0 top-0 h-full w-full bg-black bg-opacity-50"
 			@click.self="state = 'closed'"
@@ -67,5 +65,6 @@ const cardCountTitle = computed(() => {
 				</div>
 			</section>
 		</div>
-	</Teleport>
+
+	</DndOverlayTeleport>
 </template>

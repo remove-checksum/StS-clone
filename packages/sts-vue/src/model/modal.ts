@@ -1,0 +1,1 @@
+export const OVERLAY_MODAL_SELECTOR = '[data-overlay-teleport]'

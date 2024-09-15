@@ -53,9 +53,6 @@ importers:
       '@tsconfig/node20':
         specifier: ^20.1.4
         version: 20.1.4
-      '@types/animejs':
-        specifier: ^3.1.12
-        version: 3.1.12
       '@types/jsdom':
         specifier: ^21.1.7
         version: 21.1.7
@@ -651,9 +648,6 @@ packages:
 
   '@tsconfig/node20@20.1.4':
     resolution: {integrity: sha512-sqgsT69YFeLWf5NtJ4Xq/xAF8p4ZQHlmGW74Nu2tD4+g5fAsposc4ZfaaPixVu4y01BEiDCWLRDCvDM5JOsRxg==}
-
-  '@types/animejs@3.1.12':
-    resolution: {integrity: sha512-fpdH+ZtlO0kqjTOqRaBdsEmvpRNOayI8k4EVkEtitL5l6wducDOXk0rgQgfZqWf/ZX9DzXrHf257S5i9xTcISQ==}
 
   '@types/estree@1.0.5':
     resolution: {integrity: sha512-/kYRxGDLWzHOB7q+wtSUQlFrtcdUccpfy+X+9iMBpHK8QLLhx2wIPYuS5DYtR9Wa/YlZAbIovy7qVdB1Aq6Lyw==}
@@ -3426,8 +3420,6 @@ snapshots:
     optional: true
 
   '@tsconfig/node20@20.1.4': {}
-
-  '@types/animejs@3.1.12': {}
 
   '@types/estree@1.0.5': {}
 

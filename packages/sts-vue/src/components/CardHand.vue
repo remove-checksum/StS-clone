@@ -5,12 +5,11 @@ import PlayingCard from './PlayingCard.vue'
 import DraggablePlayingCard from './DraggablePlayingCard.vue'
 import { useRoundStore } from '@/stores/round'
 import PileOverviewPanel from './PileOverviewPanel.vue'
-import { MotionComponent, useMotion } from '@vueuse/motion'
+import DndOverlayTeleport from './DndOverlayTeleport.vue'
 
 const roundStore = useRoundStore()
 
 const cardSelectGhost = ref<ComponentInstance<typeof PlayingCard> | null>(null)
-const cardSelectInitialPosition = ref({ x: 0, y: 0 })
 
 const selectedCardIndex = ref(-1)
 const selectedCard = computed(() => {
@@ -22,7 +21,6 @@ const draggedCard = computed(() => {
 	return draggedCardIndex.value >= 0 ? roundStore.getCardByHandIndex(draggedCardIndex.value) : null
 })
 
-const cardHandLength = computed(() => roundStore.deck.hand.length)
 const draggedCardPosition = ref<{ x: number; y: number } | null>(null)
 const draggedCardStyleString = computed(() =>
 	draggedCardPosition.value
@@ -80,7 +78,6 @@ onMounted(() => {
 			:class="[
 				'col-span-8 flex',
 				isDraggedOver && 'bg-sky-400',
-				$style.cardHandClipping,
 			]"
 		>
 			<DraggablePlayingCard
@@ -88,7 +85,7 @@ onMounted(() => {
 				:key="index"
 				:index="index"
 				:card="roundStore.getCardById(cardId)!"
-				class="first:ml-auto last:mr-auto min-w-0"
+				class="first:ml-auto last:mr-auto min-w-2"
 				@card-picked="cardPicked"
 				@card-dropped="cardDropped"
 				@card-moved="cardMoved"
@@ -101,46 +98,20 @@ onMounted(() => {
 			class="col-span-2"
 		>Discard Pile</PileOverviewPanel>
 	</div>
-	<Teleport
-		v-if="draggedCard && draggedCardStyleString.length > 0"
-		to="#teleports"
-	>
+	<DndOverlayTeleport v-if="draggedCard && draggedCardStyleString.length > 0">
 		<PlayingCard
 			:card="draggedCard"
 			:selected="true"
 			:style="draggedCardStyleString"
-			class="pointer-events-none fixed"
+			class="fixed pointer-events-none"
 		/>
-	</Teleport>
-	<Teleport
-		v-if="selectedCard"
-		to="#teleports"
-	>
-		<MotionComponent
-			:enter="{
-				translateX: '50%',
-				translateY: '50%',
-				opacity: 1
-			}"
-			:initial="{
-				translateX: '50%',
-				translateY: '70%',
-				opacity: 0
-			}"
-		>
-			<PlayingCard
-				ref="cardSelectGhost"
-				:card="selectedCard"
-				:selected="true"
-				@click="toggleCardSelect"
-			></PlayingCard>
-		</MotionComponent>
-	</Teleport>
+	</DndOverlayTeleport>
+	<DndOverlayTeleport v-if="selectedCard">
+		<PlayingCard
+			ref="cardSelectGhost"
+			:card="selectedCard"
+			:selected="true"
+			@click="toggleCardSelect"
+		></PlayingCard>
+	</DndOverlayTeleport>
 </template>
-
-<style lang="css" module>
-.cardHandSpacing {
-	display: flex;
-	flex-basis: calc(100% / v-bind(cardHandLength));
-}
-</style>

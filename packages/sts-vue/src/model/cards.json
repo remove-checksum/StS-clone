@@ -10,9 +10,9 @@
 		{
 			"id": 2,
 			"name": "Defend",
-			"description": "Gain 5 shield",
+			"description": "Gain 5 block",
 			"cost": 1,
-			"effect": [{ "kind": "shield", "amount": 5 }]
+			"effect": [{ "kind": "block", "amount": 5 }]
 		},
 		{
 			"id": 3,

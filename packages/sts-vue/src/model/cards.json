@@ -26,7 +26,7 @@
 				},
 				{
 					"kind": "damage",
-					"amount": 7
+					"amount": 12
 				}
 			]
 		},
@@ -47,7 +47,7 @@
 			"name": "Heavy strike",
 			"description": "Deal 13 damage",
 			"cost": 2,
-			"effect": [{ "kind": "damage", "amount": 8 }]
+			"effect": [{ "kind": "damage", "amount": 13 }]
 		},
 		{
 			"id": 6,

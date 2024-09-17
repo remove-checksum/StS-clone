@@ -28,9 +28,9 @@ export class Deck<T extends Card = Card> {
 	}
 
 	cardInHandAt(index: number) {
-		if (index > this._hand.length || index < 0) return null
+		if (index > this._hand.length || index < 0) return undefined
 		const id = this._hand[index]
-		return this.cardById(id)
+		return this.cardById(id)!
 	}
 
 	/**

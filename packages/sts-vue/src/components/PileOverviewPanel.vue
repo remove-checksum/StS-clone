@@ -47,14 +47,14 @@ const cardCountTitle = computed(() => {
 	</div>
 	<DndOverlayTeleport v-if="state !== 'closed'">
 		<div
-			class="fixed left-0 top-0 h-full w-full bg-black bg-opacity-50"
+			class="fixed left-0 top-0 h-full w-full bg-black bg-opacity-50 pointer-events-auto"
 			@click.self="state = 'closed'"
 		>
 			<section class="fixed left-[10%] top-[12vh] h-4/5 w-4/5 border-2 border-black bg-zinc-300 p-4">
 				<h2>
 					<slot></slot>
 				</h2>
-				<div class="flex flex-row gap-2">
+				<div class="flex flex-row gap-2 flex-wrap">
 					<PlayingCard
 						v-for="(cardId, index) of cardsByPileKind"
 						:key="cardId"

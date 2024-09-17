@@ -11,9 +11,13 @@ export function usePositioning(initialPosition: MaybeRefOrGetter<{ x: number; y:
 		top: position.value.y + 'px'
 	}))
 
-	function reset() {
+	function setPosition(point: { x: number; y: number }) {
+		position.value = point
+	}
+
+	function resetPosition() {
 		position.value = toValue(initialPosition)
 	}
 
-	return { style, position, reset }
+	return { position, setPosition, style, resetPosition } as const
 }

@@ -35,49 +35,41 @@ function makeRound() {
 	return round
 }
 
-const round = makeRound()
-
 export type { Card } from '@/model/card'
 
 export const useRoundStore = defineStore('game', () => {
-	const __roundNonReactive = round
-
-	const deck = reactive(round.deck)
-	const player = ref(round.player)
-	const enemies = ref(round.enemies)
+	const __roundNonReactive = makeRound()
+	const round = reactive(__roundNonReactive)
+	const deck = computed(() => round.deck)
+	const player = computed(() => round.player)
+	const enemies = computed(() => round.enemies)
 
 	const selectedEnemyKey = ref(round.selectedEnemyKey)
 	const selectedHandIndex = ref(-1)
 	const selectedHandCard = computed(() =>
-		selectedHandIndex.value > -1 ? deck.cardInHandAt(selectedHandIndex.value) : null
+		selectedHandIndex.value > -1 ? round.deck.cardInHandAt(selectedHandIndex.value) : null
 	)
 
 	function selectCardInHand(index: number) {
 		selectedHandIndex.value = index
 	}
 
-	deck.draw(5)
-
-	// function __syncDeck() {
-	// 	deck.discardPile = __roundNonReactive.deck.discardPile
-	// 	deck.drawPile = __roundNonReactive.deck.drawPile
-	// 	deck.hand = __roundNonReactive.deck.hand
-	// }
+	round.deck.draw(5)
 
 	function playCard(position: number) {
 		round.tryPlayFromHand(position)
 	}
 
 	function getCardById(id: number) {
-		return deck.cardById(id)!
+		return round.deck.cardById(id)!
 	}
 
 	function cardInHandAt(index: number) {
-		return deck.cardInHandAt(index)
+		return round.deck.cardInHandAt(index)
 	}
 
 	function startRound() {
-		deck.draw(Defaults.Draw)
+		round.deck.draw(Defaults.Draw)
 	}
 
 	function changeSelectedEnemy(enemyKey: string) {

@@ -10,15 +10,20 @@ import { usePositioning } from '@/composables/usePositioning'
 import { storeToRefs } from 'pinia'
 
 const roundStore = useRoundStore()
-const { selectedHandCard } = storeToRefs(roundStore)
+const { selectedHandCard, selectedHandIndex } = storeToRefs(roundStore)
 const { selectCardInHand } = roundStore
 
 const isCardDragged = ref(false)
-const { style, position } = usePositioning({ x: -1, y: -1 })
+const { position, style, resetPosition } = usePositioning({ x: -1, y: -1 })
 
-function cardSelected(index: number, sizing: DOMRect) {
+function selectCard(index: number, sizing: DOMRect) {
 	selectCardInHand(index)
-	position.value = { x: sizing.left , y: sizing.top }
+	position.value = { x: sizing.left, y: sizing.top }
+}
+
+function unselectCard() {
+	selectCardInHand(-1)
+	resetPosition()
 }
 
 function cardPicked(index: number) {
@@ -33,7 +38,7 @@ function cardMoved(nextPosition: { x: number; y: number }) {
 function cardDropped() {
 	isCardDragged.value = false
 	selectCardInHand(-1)
-	position.value = { x: -1, y: -1 }
+	resetPosition()
 }
 
 const cardDropTarget = ref<HTMLDivElement | null>(null)
@@ -77,10 +82,11 @@ onMounted(() => {
 				:index="index"
 				:card="roundStore.getCardById(cardId)"
 				class="first:ml-auto last:mr-auto min-w-0"
+				:class="selectedHandIndex === index && 'opacity-0'"
 				@card-picked="cardPicked"
 				@card-dropped="cardDropped"
 				@card-moved="cardMoved"
-				@card-selected="cardSelected"
+				@card-selected="selectCard"
 			>
 			</DraggablePlayingCard>
 		</div>
@@ -95,11 +101,11 @@ onMounted(() => {
 			:card="selectedHandCard"
 			:selected="true"
 			:style="style"
-			class="fixed pointer-events-auto"
-			@click="selectCardInHand(-1)"
+			class="absolute pointer-events-auto"
+			@click="unselectCard"
 		/>
 		<PlayingCard
-			v-else-if="position.x > -1 && position.y > -1"
+			v-if="isCardDragged"
 			:card="selectedHandCard"
 			:style="style"
 			:selected="true"

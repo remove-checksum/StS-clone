@@ -76,7 +76,7 @@ onMounted(() => {
 <template>
 	<div
 		ref="cardWrapper"
-		class="relative min-w-12 lg:min-w-36 outline"
+		class="relative min-w-12 lg:min-w-36"
 	>
 		<PlayingCard
 			ref="cardRef"

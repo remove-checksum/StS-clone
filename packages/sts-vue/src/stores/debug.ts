@@ -1,27 +1,27 @@
 import { defineStore } from 'pinia'
 import { useRoundStore } from './round'
-import { Character } from '@/model/character'
+import { Defaults } from '@/model/round'
 
 export const useDebugStore = defineStore('debug', () => {
 	const roundStore = useRoundStore()
 
 	function drawOne() {
-		roundStore.round.deck.draw(1)
+		roundStore.deck.draw(1)
 	}
 	function discardOne(cardIndex: number) {
-		roundStore.round.deck.discardAt(cardIndex)
+		roundStore.deck.discardAt(cardIndex)
 	}
 	function discardHand() {
-		while (roundStore.round.deck.hand.length > 0) {
-			roundStore.round.deck.discardAt(0)
+		while (roundStore.deck.hand.length > 0) {
+			roundStore.deck.discardAt(0)
 		}
 	}
 	function shuffle() {
 		discardHand()
-		roundStore.round.deck.draw(Character.Defaults.Draw)
+		roundStore.deck.draw(Defaults.Draw)
 	}
 	function addPlayerResource() {
-		roundStore.round.player.resource += 1
+		roundStore.player.resource += 1
 	}
 
 	return { drawOne, discardOne, discardHand, shuffle, addPlayerResource }

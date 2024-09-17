@@ -5,7 +5,7 @@ import { ref, onMounted } from 'vue'
 import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { disableNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview'
 import { preserveOffsetOnSource } from '@atlaskit/pragmatic-drag-and-drop/element/preserve-offset-on-source'
-import { useMotion } from '@vueuse/motion'
+import { assert } from '@/model/assert'
 
 type Point = { x: number; y: number }
 const props = defineProps<{
@@ -16,7 +16,14 @@ const emit = defineEmits<{
 	(e: 'cardPicked', index: number): void
 	(e: 'cardDropped'): void
 	(e: 'cardMoved', value: Point): void
+	(e: 'cardSelected', index: number, sizing: DOMRect): void
 }>()
+
+function cardSelected(e: MouseEvent) {
+	const sizing = (e.currentTarget as HTMLDivElement).getBoundingClientRect()
+
+	emit('cardSelected', props.index, sizing)
+}
 
 const CARD_HOVER_SCALE = 1
 
@@ -26,23 +33,12 @@ const cardWrapper = ref<HTMLDivElement | null>(null)
 const isDragged = ref(false)
 const dragCursorOffset = ref<Point>({ x: 0, y: 0 })
 
-useMotion(cardWrapper, {
-	initial: {
-		translateY: 0
-	},
-	hovered: {
-		translateY: -10
-	}
-})
-
 onMounted(() => {
-	let cardEl = cardRef.value?.cardRef
-	if (!cardEl) {
-		console.error('no element')
-		return
-	}
+	const card = cardRef.value?.cardRef
+	assert(!!card)
+
 	draggable({
-		element: cardEl,
+		element: card,
 		getInitialData: () => {
 			return { cardIndex: props.index }
 		},
@@ -53,11 +49,11 @@ onMounted(() => {
 		},
 		onDragStart: (args) => {
 			const offsetFn = preserveOffsetOnSource({
-				element: cardEl,
+				element: card,
 				input: args.location.initial.input
 			})
 
-			dragCursorOffset.value = offsetFn({ container: cardEl })
+			dragCursorOffset.value = offsetFn({ container: card })
 			isDragged.value = true
 			emit('cardPicked', props.index)
 		},
@@ -80,13 +76,15 @@ onMounted(() => {
 <template>
 	<div
 		ref="cardWrapper"
-		class="relative min-w-12 lg:min-w-36"
+		class="relative min-w-12 lg:min-w-36 outline"
 	>
 		<PlayingCard
 			ref="cardRef"
 			:card="$props.card"
+			:index="$props.index"
 			:selected="isDragged"
-			:class="['absolute', isDragged && 'w-0 opacity-0']"
+			:class="[isDragged && 'w-0 opacity-0']"
+			@click="cardSelected"
 		>
 		</PlayingCard>
 	</div>

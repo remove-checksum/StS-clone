@@ -1,48 +1,39 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, type ComponentInstance } from 'vue'
+import { ref, onMounted } from 'vue'
 import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import PlayingCard from './PlayingCard.vue'
 import DraggablePlayingCard from './DraggablePlayingCard.vue'
 import { useRoundStore } from '@/stores/round'
 import PileOverviewPanel from './PileOverviewPanel.vue'
 import DndOverlayTeleport from './DndOverlayTeleport.vue'
+import { usePositioning } from '@/composables/usePositioning'
+import { storeToRefs } from 'pinia'
 
 const roundStore = useRoundStore()
+const { selectedHandCard } = storeToRefs(roundStore)
+const { selectCardInHand } = roundStore
 
-const cardSelectGhost = ref<ComponentInstance<typeof PlayingCard> | null>(null)
+const isCardDragged = ref(false)
+const { style, position } = usePositioning({ x: -1, y: -1 })
 
-const selectedCardIndex = ref(-1)
-const selectedCard = computed(() => {
-	return selectedCardIndex.value >= 0 ? roundStore.getCardByHandIndex(selectedCardIndex.value) : null
-})
-
-const draggedCardIndex = ref(-1)
-const draggedCard = computed(() => {
-	return draggedCardIndex.value >= 0 ? roundStore.getCardByHandIndex(draggedCardIndex.value) : null
-})
-
-const draggedCardPosition = ref<{ x: number; y: number } | null>(null)
-const draggedCardStyleString = computed(() =>
-	draggedCardPosition.value
-		? `left: ${draggedCardPosition.value.x}px; top: ${draggedCardPosition.value.y}px`
-		: ''
-)
-
-function toggleCardSelect(index: number) {
-	selectedCardIndex.value = selectedCardIndex.value < 0 ? index : -1
+function cardSelected(index: number, sizing: DOMRect) {
+	selectCardInHand(index)
+	position.value = { x: sizing.left , y: sizing.top }
 }
 
 function cardPicked(index: number) {
-	draggedCardIndex.value = index
+	selectCardInHand(index)
 }
 
 function cardMoved(nextPosition: { x: number; y: number }) {
-	draggedCardPosition.value = nextPosition
+	isCardDragged.value = true
+	position.value = nextPosition
 }
 
 function cardDropped() {
-	draggedCardIndex.value = -1
-	draggedCardPosition.value = null
+	isCardDragged.value = false
+	selectCardInHand(-1)
+	position.value = { x: -1, y: -1 }
 }
 
 const cardDropTarget = ref<HTMLDivElement | null>(null)
@@ -84,12 +75,12 @@ onMounted(() => {
 				v-for="(cardId, index) of roundStore.deck.hand"
 				:key="index"
 				:index="index"
-				:card="roundStore.getCardById(cardId)!"
-				class="first:ml-auto last:mr-auto min-w-2"
+				:card="roundStore.getCardById(cardId)"
+				class="first:ml-auto last:mr-auto min-w-0"
 				@card-picked="cardPicked"
 				@card-dropped="cardDropped"
 				@card-moved="cardMoved"
-				@click="toggleCardSelect(index)"
+				@card-selected="cardSelected"
 			>
 			</DraggablePlayingCard>
 		</div>
@@ -98,20 +89,20 @@ onMounted(() => {
 			class="col-span-2"
 		>Discard Pile</PileOverviewPanel>
 	</div>
-	<DndOverlayTeleport v-if="draggedCard && draggedCardStyleString.length > 0">
+	<DndOverlayTeleport v-if="selectedHandCard && position.x > -1 && position.y > -1">
 		<PlayingCard
-			:card="draggedCard"
+			v-if="!isCardDragged"
+			:card="selectedHandCard"
 			:selected="true"
-			:style="draggedCardStyleString"
-			class="fixed pointer-events-none"
+			:style="style"
+			class="fixed pointer-events-auto"
+			@click="selectCardInHand(-1)"
 		/>
-	</DndOverlayTeleport>
-	<DndOverlayTeleport v-if="selectedCard">
 		<PlayingCard
-			ref="cardSelectGhost"
-			:card="selectedCard"
+			v-else-if="position.x > -1 && position.y > -1"
+			:card="selectedHandCard"
+			:style="style"
 			:selected="true"
-			@click="toggleCardSelect"
-		></PlayingCard>
+		/>
 	</DndOverlayTeleport>
 </template>

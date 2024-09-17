@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { cards } from '@/model/cards.json'
 import type { Card } from './round'
 import { Character } from '@/model/character'
@@ -47,6 +47,16 @@ export const useRoundStore = defineStore('game', () => {
 	const enemies = ref(round.enemies)
 
 	const selectedEnemyKey = ref(round.selectedEnemyKey)
+	const selectedHandIndex = ref(-1)
+	const selectedHandCard = computed(() =>
+		selectedHandIndex.value > -1 ? deck.cardInHandAt(selectedHandIndex.value) : null
+	)
+
+	function selectCardInHand(index: number) {
+		selectedHandIndex.value = index
+	}
+
+	deck.draw(5)
 
 	// function __syncDeck() {
 	// 	deck.discardPile = __roundNonReactive.deck.discardPile
@@ -59,7 +69,7 @@ export const useRoundStore = defineStore('game', () => {
 	}
 
 	function getCardById(id: number) {
-		return deck.cardById(id)
+		return deck.cardById(id)!
 	}
 
 	function cardInHandAt(index: number) {
@@ -75,13 +85,15 @@ export const useRoundStore = defineStore('game', () => {
 		selectedEnemyKey.value = round.selectedEnemyKey
 	}
 
-
 	return {
 		__roundNonReactive,
 		deck,
 		player,
 		enemies,
 		selectedEnemyKey,
+		selectedHandIndex,
+		selectedHandCard,
+		selectCardInHand,
 		getCardById,
 		getCardByHandIndex: cardInHandAt,
 		changeSelectedEnemy,

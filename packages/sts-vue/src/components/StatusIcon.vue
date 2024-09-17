@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useMotion } from '@vueuse/motion'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
-defineProps<{ stat: number }>()
+const props = defineProps<{ stat: number }>()
 const wrapperRef = ref<HTMLElement | null>(null)
 
 // TODO: stagger animations in order
@@ -24,10 +24,18 @@ const { apply } = useMotion(wrapperRef, {
 		backgroundColor: 'red'
 	}
 })
+
+watch(() => props.stat, () => {
+	apply('jump')
+})
+
 </script>
 
 <template>
-	<div class="grid place-items-center *:col-start-1 *:row-start-1 *:col-end-1 *:row-end-1" ref="wrapperRef">
+	<div
+		ref="wrapperRef"
+		class="grid place-items-center *:col-start-1 *:row-start-1 *:col-end-1 *:row-end-1"
+	>
 		<slot></slot>
 		<span class="tabular-nums">{{ stat }}</span>
 	</div>

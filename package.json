@@ -6,8 +6,8 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "build": "pnpm -r --filter='./packages/* run build",
-    "dev": "pnpm -r --parallel --filter='./packages/* run dev",
+    "build": "pnpm -r --filter='./packages/*' run build",
+    "dev": "pnpm -r --parallel --filter='./packages/*' run dev",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

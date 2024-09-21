@@ -1,5 +1,7 @@
 import type { Card } from '@/model/card'
 
+export const HAND_LIMIT = 10
+
 export class Deck<T extends Card = Card> {
 	public cards: Map<number, T>
 	private _drawPile: Array<number>
@@ -18,19 +20,36 @@ export class Deck<T extends Card = Card> {
 		return this._discardPile.slice()
 	}
 
-	constructor(cards: Array<T>) {
+	constructor(
+		cards: Array<T>,
+		public handLimit = HAND_LIMIT
+	) {
 		this._drawPile = cards.map((card) => card.id)
 		this.cards = new Map(cards.map((card) => [card.id, card]))
 	}
 
 	cardById(id: number) {
-		return this.cards.get(id)
+		return this.cards.get(id)!
 	}
 
 	cardInHandAt(index: number) {
 		if (index > this._hand.length || index < 0) return undefined
 		const id = this._hand[index]
 		return this.cardById(id)!
+	}
+
+	drawOne() {
+		if (this._drawPile.length > 0) {
+			if (this._hand.length < this.handLimit) {
+				this._hand.push(this._drawPile.pop()!)
+			} else {
+				this._discardPile.push(this._drawPile.pop()!)
+			}
+		} else if (this._discardPile.length > 0) {
+			this._drawPile = FYshuffle(this._discardPile)
+			this._discardPile = []
+			this.drawOne()
+		}
 	}
 
 	/**
@@ -40,23 +59,8 @@ export class Deck<T extends Card = Card> {
 	draw(count: number) {
 		if (count <= 0) return
 
-		if (this._drawPile.length > count) {
-			for (let i = 0; i < count; i++) {
-				const id = this._drawPile.pop()!
-				this._hand.push(id)
-			}
-		} else {
-			const shuffledDraw = FYshuffle(this._discardPile).concat(this._drawPile)
-
-			let cardsDrawn = count
-			while (shuffledDraw.length > 0 && cardsDrawn > 0) {
-				const id = shuffledDraw.pop()!
-				this._hand.push(id)
-				cardsDrawn--
-			}
-
-			this._discardPile = []
-			this._drawPile = shuffledDraw.slice()
+		for (let i = 0; i < count; i++) {
+			this.drawOne()
 		}
 	}
 

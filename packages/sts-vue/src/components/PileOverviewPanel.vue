@@ -41,7 +41,10 @@ const cardCountTitle = computed(() => {
 		class="bg-blue-400 p-8"
 		:class="$attrs.class"
 	>
-		<BaseButton @click="state = kind">
+		<BaseButton
+			:disabled="cardsByPileKind.length === 0"
+			@click="state = kind"
+		>
 			<slot></slot> | {{ cardCountTitle }}
 		</BaseButton>
 	</div>

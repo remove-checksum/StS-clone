@@ -2,13 +2,6 @@
 	<div>
 		<h4 class="text-xl">{{ player.name }}</h4>
 		<div class="flex items-start">
-			<StatusIcon :stat="player.resource">
-				<Circle
-					class="text-blue-400"
-					:class="iconSizing"
-					:inline="true"
-				/>
-			</StatusIcon>
 			<StatusIcon :stat="player.health">
 				<Heart
 					class="text-pink-800"
@@ -35,7 +28,6 @@
 import Heart from '~icons/ph/heart-straight-fill'
 import Shield from '~icons/ph/shield-fill'
 import HalfDrop from '~icons/pixelarticons/drop-half'
-import Circle from '~icons/ph/circle-fill'
 import StatusIcon from './StatusIcon.vue'
 import type { Player, TargetStatus } from '@/model/character'
 import { type FunctionalComponent } from 'vue'

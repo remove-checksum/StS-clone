@@ -6,9 +6,11 @@ import { Player, Target } from '@/model/character'
 import { GameRound, Defaults } from '@/model/round'
 
 function makeRound() {
-	const playerHealth = 10
-	const playerResource = 10
-	const player = new Player('Clad', playerHealth, playerHealth, playerResource, { block: 4 })
+	const playerHealth = 20
+	const playerResource = 3
+	const player = new Player('Clad', playerHealth, playerHealth, playerResource, playerResource, {
+		block: 4
+	})
 	const enemies = new Map([
 		['wurm', new Target('Wurm', Defaults.Health, Defaults.Health, { block: 4 })],
 		['gremlin', new Target('Gremlin')]
@@ -51,6 +53,7 @@ export const useRoundStore = defineStore('game', () => {
 		}
 	})
 
+	const roundState = computed(() => round.roundState)
 	const player = computed(() => round.player)
 	const enemies = computed(() => round.enemies)
 	const selectedEnemyKey = computed(() => round.selectedEnemyKey)
@@ -67,9 +70,7 @@ export const useRoundStore = defineStore('game', () => {
 	function playSelectedCard() {
 		if (selectedHandIndex.value > -1) {
 			const success = round.tryPlayFromHand(selectedHandIndex.value)
-			if (success) {
-				selectedHandIndex.value = -1
-			}
+			selectedHandIndex.value = -1
 		}
 	}
 
@@ -91,9 +92,11 @@ export const useRoundStore = defineStore('game', () => {
 
 	return {
 		__roundNonReactive,
+		round,
 		deck,
 		player,
 		enemies,
+		roundState,
 		selectedEnemyKey,
 		selectedHandIndex,
 		selectedHandCard,

@@ -2,7 +2,7 @@
 import { useMotion } from '@vueuse/motion'
 import { ref, watch } from 'vue'
 
-const props = defineProps<{ stat: number }>()
+const props = defineProps<{ stat: number | string }>()
 const wrapperRef = ref<HTMLElement | null>(null)
 
 // TODO: stagger animations in order
@@ -37,6 +37,6 @@ watch(() => props.stat, () => {
 		class="grid place-items-center *:col-start-1 *:row-start-1 *:col-end-1 *:row-end-1"
 	>
 		<slot></slot>
-		<span class="tabular-nums">{{ stat }}</span>
+		<span class="tabular-nums">{{ stat.toString() }}</span>
 	</div>
 </template>

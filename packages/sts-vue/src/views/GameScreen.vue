@@ -30,6 +30,7 @@ onMounted(() => {
 		element: cardPlayZoneRef,
 		onDrop: ({ source }) => {
 			if (isCard(source.data)) {
+				roundStore.selectCardInHand(source.data.cardIndex)
 				roundStore.playSelectedCard()
 			}
 			cardInDropZone.value = false

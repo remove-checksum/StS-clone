@@ -7,7 +7,6 @@ import { useRoundStore } from '@/stores/round'
 import PileOverviewPanel from './PileOverviewPanel.vue'
 import DndOverlayTeleport from './DndOverlayTeleport.vue'
 import { usePositioning } from '@/composables/usePositioning'
-import type { Card } from '@/model/card'
 import { storeToRefs } from 'pinia'
 
 const roundStore = useRoundStore()
@@ -77,8 +76,6 @@ onMounted(() => {
 </script>
 
 <template>
-		cards in hand: {{ roundStore.deck.hand.length }}
-		deck size: {{ roundStore.deck.size }}
 	<div class="grid grid-cols-12 min-h-24 justify-between lg:min-h-56">
 		<PileOverviewPanel
 			kind="draw"

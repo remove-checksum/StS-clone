@@ -54,7 +54,8 @@ export class Player extends Target {
 		public name: string,
 		public maxHealth = Defaults.Health,
 		public health = maxHealth,
-		public resource: number = Defaults.Resource,
+		public maxResource: number = Defaults.Resource,
+		public resource: number = maxResource,
 		initialStatuses: StatusUpdate = {}
 	) {
 		super(name, maxHealth, health, initialStatuses)

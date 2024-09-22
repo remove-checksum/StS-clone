@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import DebugToggle from '@/components/DebugToggle.vue'
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoundStore } from '@/stores/round'
 import PlayerCard from '@/components/PlayerCard.vue'
 import EnemyCard from '@/components/EnemyCard.vue'
@@ -98,7 +98,6 @@ onMounted(() => roundStore.startRound())
 				/>
 			</div>
 		</div>
-
 		<CardHand />
 	</main>
 	<div

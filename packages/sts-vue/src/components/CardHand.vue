@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted, type ComponentInstance } from 'vue'
+import { ref, onMounted, type ComponentInstance, computed } from 'vue'
 import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import PlayingCard from './PlayingCard.vue'
 import DraggablePlayingCard from './DraggablePlayingCard.vue'
+import StatusIcon from './StatusIcon.vue'
+import BaseButton from './BaseButton.vue'
+import Circle from '~icons/ph/circle-fill'
 import { useRoundStore } from '@/stores/round'
 import PileOverviewPanel from './PileOverviewPanel.vue'
 import DndOverlayTeleport from './DndOverlayTeleport.vue'
@@ -17,6 +20,7 @@ const cardsInHand = ref<Array<ComponentInstance<typeof DraggablePlayingCard>> | 
 
 const isCardDragged = ref(false)
 const { position, style, resetPosition } = usePositioning({ x: -1, y: -1 })
+const playerStatString = computed(() => `${roundStore.player.resource}\\${roundStore.player.maxResource}`)
 
 function selectCard(index: number) {
 	selectCardInHand(index)
@@ -77,10 +81,15 @@ onMounted(() => {
 
 <template>
 	<div class="grid grid-cols-12 min-h-24 justify-between lg:min-h-56">
-		<PileOverviewPanel
-			kind="draw"
-			class="col-span-2"
-		>Draw Pile</PileOverviewPanel>
+		<div class="col-span-2 flex flex-col justify-between">
+			<StatusIcon
+				:stat="playerStatString"
+				class="md:text-2xl self-end"
+			>
+				<Circle class="text-blue-400 h-8 w-8 md:h-20 md:w-20" />
+			</StatusIcon>
+			<PileOverviewPanel kind="draw">Draw Pile</PileOverviewPanel>
+		</div>
 		<div
 			ref="cardDropTarget"
 			:class="[
@@ -103,10 +112,16 @@ onMounted(() => {
 			>
 			</DraggablePlayingCard>
 		</div>
-		<PileOverviewPanel
-			kind="discard"
-			class="col-span-2"
-		>Discard Pile</PileOverviewPanel>
+		<div class="col-span-2 flex flex-col justify-between">
+			<BaseButton
+				class="self-start py-12 px-12"
+				@click="roundStore.round.turnEnd()"
+			>End turn</BaseButton>
+			<PileOverviewPanel
+				kind="discard"
+				class="col-span-2"
+			>Discard Pile</PileOverviewPanel>
+		</div>
 	</div>
 	<DndOverlayTeleport v-if="selectedHandCard && position.x > -1 && position.y > -1">
 		<PlayingCard

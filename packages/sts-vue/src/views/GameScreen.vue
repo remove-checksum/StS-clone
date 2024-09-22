@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import DebugToggle from '@/components/DebugToggle.vue'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoundStore } from '@/stores/round'
-import CharacterCard from '@/components/CharacterCard.vue'
+import PlayerCard from '@/components/PlayerCard.vue'
+import EnemyCard from '@/components/EnemyCard.vue'
 import CardHand from '@/components/CardHand.vue'
 import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
+import { assert } from '@/model/assert'
 
 const roundStore = useRoundStore()
-const { changeSelectedEnemy } = roundStore
 
 function isCard(cardData: unknown): cardData is { cardIndex: number } {
 	return (
@@ -17,20 +18,21 @@ function isCard(cardData: unknown): cardData is { cardIndex: number } {
 		typeof cardData.cardIndex === 'number'
 	)
 }
+
 const cardPlayDropZone = ref<null | HTMLDivElement>(null)
 const cardInDropZone = ref(false)
 
 onMounted(() => {
-	const cardPlayZoneRef = cardPlayDropZone.value!
+	const cardPlayZoneRef = cardPlayDropZone.value
+	assert(cardPlayZoneRef)
 
 	dropTargetForElements({
 		element: cardPlayZoneRef,
-		canDrop: () => true,
 		onDrop: ({ source }) => {
 			if (isCard(source.data)) {
-				const isSuccess = roundStore.playCard(source.data.cardIndex)
-				cardInDropZone.value = true
+				roundStore.playSelectedCard()
 			}
+			cardInDropZone.value = false
 		},
 		onDragEnter: () => {
 			cardInDropZone.value = true
@@ -40,6 +42,8 @@ onMounted(() => {
 		}
 	})
 })
+
+onMounted(() => roundStore.startRound())
 </script>
 
 <template>
@@ -61,42 +65,43 @@ onMounted(() => {
 		<div class="grid grow grid-flow-row grid-cols-3 bg-gray-600">
 			<div class="bg-zinc-300">
 				<h3 class="text-center text-2xl">Player</h3>
-				<CharacterCard
-					:target="roundStore.player"
-					:selected="false"
-				></CharacterCard>
+				<PlayerCard :player="roundStore.player" />
 			</div>
 			<div>
 				<div
 					ref="cardPlayDropZone"
-					class="grid h-1/2 w-full place-self-center border-black bg-zinc-400"
-					:class="{ 'border-dotted': cardInDropZone }"
+					class="grid h-1/2 w-full place-self-center bg-zinc-400"
+					:class="[
+						'ring-inset ring-white transition-[box-shadow] duration-200',
+						roundStore.selectedHandIndex > -1 ? 'ring-4' : 'ring-0',
+						cardInDropZone ? 'ring-8' : 'ring-0'
+					]"
 				>
 					<h3
-						v-if="cardInDropZone"
-						class="place-self-center text-3xl"
-					>Drop</h3>
+						v-if="roundStore.selectedHandCard"
+						class="cursor-pointer place-self-center text-3xl underline"
+						@click="roundStore.playSelectedCard"
+					>
+						Drop
+					</h3>
 				</div>
 			</div>
 			<div class="bg-zinc-300">
 				<h3 class="text-center text-2xl">Enemies</h3>
-				<template
-					v-for="[key, target] of roundStore.enemies.entries()"
+				<EnemyCard
+					v-for="[key, enemy] of roundStore.enemies.entries()"
 					:key="key"
-				>
-					<CharacterCard
-						:selected="roundStore.selectedEnemyKey === key"
-						:target="target"
-						@click="changeSelectedEnemy(key)"
-					></CharacterCard>
-				</template>
+					:enemy="enemy"
+					:selected="roundStore.selectedEnemyKey === key"
+					@click="roundStore.selectEnemy(key)"
+				/>
 			</div>
 		</div>
 
-		<CardHand></CardHand>
+		<CardHand />
 	</main>
 	<div
 		data-overlay-teleport
-		class="fixed left-0 top-0 w-full h-full pointer-events-none"
+		class="pointer-events-none fixed left-0 top-0 h-full w-full"
 	></div>
 </template>

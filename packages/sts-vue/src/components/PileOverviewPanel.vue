@@ -59,9 +59,9 @@ const cardCountTitle = computed(() => {
 				</h2>
 				<div class="flex flex-row gap-2 flex-wrap">
 					<PlayingCard
-						v-for="(cardId, index) of cardsByPileKind"
-						:key="cardId"
-						:card="roundStore.getCardById(cardId)!"
+						v-for="(card, index) of cardsByPileKind"
+						:key="index"
+						:card="card"
 						:index="index"
 						:selected="false"
 					></PlayingCard>

@@ -1,5 +1,5 @@
-import type { Character } from '@/model/character'
-import type { Card, CardEffectKind } from '@/model/card'
+import { Player, Target, TargetStatus } from '@/model/character'
+import { CardEffect, DamageEffect, type Card } from '@/model/card'
 import { Deck } from '@/model/deck'
 
 export const Defaults = {
@@ -7,14 +7,23 @@ export const Defaults = {
 	Health: 10,
 	Resource: 3
 }
+export const RoundState = {
+	Initial: 'Initial',
+	Player: 'Player',
+	Enemy: 'Enemy',
+	Lost: 'Lost',
+	Won: 'Won'
+} as const
+export type RoundState = (typeof RoundState)[keyof typeof RoundState]
+
 export class GameRound<T extends string> {
-	public turn: 'player' | 'enemy' = 'player'
+	public roundState: RoundState = RoundState.Initial
 	public nextEnemyAt: number
 
 	public selectedEnemyKey: T
 	constructor(
-		public player: Character,
-		public enemies: Map<T, Character>,
+		public player: Player,
+		public enemies: Map<T, Target>,
 		public cards: Array<Card>,
 		public deck = new Deck(cards)
 	) {
@@ -52,16 +61,18 @@ export class GameRound<T extends string> {
 		this.player.resource -= card.cost
 
 		for (const eff of card.effect) {
-			console.log(eff)
 			this.applyCardEffect(eff.kind, eff.amount)
 		}
 
+		if (this.enemies.size === 0) {
+			this.roundState = RoundState.Won
+		}
 		return true
 	}
 
 	turnStart() {
 		this.deck.draw(Defaults.Draw)
-		this.turn = 'enemy'
+		this.roundState = RoundState.Player
 	}
 
 	turnEnd() {
@@ -69,42 +80,51 @@ export class GameRound<T extends string> {
 			this.deck.discardAt(this.deck.hand.length - 1)
 		}
 
-		this.turn = 'player'
 		this.nextEnemyAt = (this.nextEnemyAt + 1) % this.enemies.size
+		this.roundState = RoundState.Enemy
 	}
 
 	enemyTurn() {
-		this.player.takeShieldedDamage(5)
+		this.player.takeDamage(DamageEffect.Damage, 5)
+
+		if (!this.player.isAlive) {
+			this.roundState = RoundState.Lost
+		}
 	}
 
-	private applyCardEffect(kind: CardEffectKind, amount: number) {
+	private applyCardEffect(kind: CardEffect, amount: number) {
 		const selectedEnemy = this.enemies.get(this.selectedEnemyKey)!
 
 		switch (kind) {
-			case 'damage': {
-				selectedEnemy.takeShieldedDamage(amount)
+			case CardEffect.Damage: {
+				selectedEnemy.takeDamage(kind, amount)
 				break
 			}
-			case 'pierce': {
-				selectedEnemy.health -= amount
+			case CardEffect.Pierce: {
+				selectedEnemy.takeDamage(kind, amount)
 				break
 			}
-			case 'selfDamage': {
-				this.player.takeShieldedDamage(amount)
+			case CardEffect.SelfDamage: {
+				this.player.takeDamage(DamageEffect.Damage, amount)
 				break
 			}
-			case 'draw': {
+			case CardEffect.Draw: {
 				this.deck.draw(amount)
 				break
 			}
-			case 'block': {
-				const shield = this.player.statuses.get('block') ?? 0
+			case CardEffect.Block: {
+				const block = this.player.statuses.get(TargetStatus.Block) ?? 0
 
-				this.player.setStatus('block', amount + shield)
+				this.player.statuses.set(TargetStatus.Block, block + amount)
 				break
 			}
 			default:
 				throw new Error(`Card effect ${kind} not implemented`)
+		}
+
+		if (!selectedEnemy.isAlive) {
+			this.enemies.delete(this.selectedEnemyKey)
+			this.selectedEnemyKey = Array.from(this.enemies.keys())[0]
 		}
 	}
 

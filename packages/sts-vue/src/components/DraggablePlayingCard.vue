@@ -25,6 +25,7 @@ function cardSelected(e: MouseEvent) {
 	emit('cardSelected', props.index, sizing)
 }
 
+
 const CARD_HOVER_SCALE = 1
 
 const cardRef = ref<InstanceType<typeof PlayingCard> | null>(null)
@@ -32,6 +33,15 @@ const cardWrapper = ref<HTMLDivElement | null>(null)
 
 const isDragged = ref(false)
 const dragCursorOffset = ref<Point>({ x: 0, y: 0 })
+
+function getCardRect() {
+	return cardRef.value?.cardRef?.getBoundingClientRect()
+}
+
+defineExpose({
+	getCardRect
+})
+
 
 onMounted(() => {
 	const card = cardRef.value?.cardRef

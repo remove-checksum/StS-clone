@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, type ComponentInstance } from 'vue'
 import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import PlayingCard from './PlayingCard.vue'
 import DraggablePlayingCard from './DraggablePlayingCard.vue'
@@ -7,18 +7,31 @@ import { useRoundStore } from '@/stores/round'
 import PileOverviewPanel from './PileOverviewPanel.vue'
 import DndOverlayTeleport from './DndOverlayTeleport.vue'
 import { usePositioning } from '@/composables/usePositioning'
+import type { Card } from '@/model/card'
 import { storeToRefs } from 'pinia'
 
 const roundStore = useRoundStore()
-const { selectedHandCard, selectedHandIndex } = storeToRefs(roundStore)
+const { selectedHandCard, selectedHandIndex, deck } = storeToRefs(roundStore)
 const { selectCardInHand } = roundStore
+
+const cardsInHand = ref<Array<ComponentInstance<typeof DraggablePlayingCard>> | null>(null)
 
 const isCardDragged = ref(false)
 const { position, style, resetPosition } = usePositioning({ x: -1, y: -1 })
 
-function selectCard(index: number, sizing: DOMRect) {
+function selectCard(index: number) {
 	selectCardInHand(index)
-	position.value = { x: sizing.left, y: sizing.top }
+
+	const cardRef = cardsInHand.value?.at(index)
+
+	if (cardRef) {
+		const rect = cardRef.getCardRect()!
+
+		position.value = {
+			x: rect.x,
+			y: rect.y
+		}
+	}
 }
 
 function unselectCard() {
@@ -36,8 +49,8 @@ function cardMoved(nextPosition: { x: number; y: number }) {
 }
 
 function cardDropped() {
+	selectedHandIndex.value = -1
 	isCardDragged.value = false
-	selectCardInHand(-1)
 	resetPosition()
 }
 
@@ -64,6 +77,8 @@ onMounted(() => {
 </script>
 
 <template>
+		cards in hand: {{ roundStore.deck.hand.length }}
+		deck size: {{ roundStore.deck.size }}
 	<div class="grid grid-cols-12 min-h-24 justify-between lg:min-h-56">
 		<PileOverviewPanel
 			kind="draw"
@@ -72,21 +87,22 @@ onMounted(() => {
 		<div
 			ref="cardDropTarget"
 			:class="[
-				'col-span-8 flex',
+				'col-span-8 flex overflow-x-clip',
 				isDraggedOver && 'bg-sky-400',
 			]"
 		>
 			<DraggablePlayingCard
-				v-for="(cardId, index) of roundStore.deck.hand"
+				v-for="(card, index) of deck.hand"
 				:key="index"
+				ref="cardsInHand"
 				:index="index"
-				:card="roundStore.getCardById(cardId)"
+				:card="card"
 				class="first:ml-auto last:mr-auto min-w-0"
 				:class="selectedHandIndex === index && 'opacity-0'"
 				@card-picked="cardPicked"
 				@card-dropped="cardDropped"
 				@card-moved="cardMoved"
-				@card-selected="selectCard"
+				@click="selectCard(index)"
 			>
 			</DraggablePlayingCard>
 		</div>

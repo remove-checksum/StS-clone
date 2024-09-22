@@ -2,16 +2,24 @@ export type WithId = {
 	readonly id: number
 }
 
-const CARD_EFFECT_KIND = ['damage', 'selfDamage', 'pierce', 'block', 'draw'] as const
-export type CardEffectKind = (typeof CARD_EFFECT_KIND)[number]
-
-type CardEffectEntry = { kind: CardEffectKind; amount: number }
+export const DamageEffect = {
+	Damage: 'damage',
+	Pierce: 'pierce'
+} as const
+export const CardEffect = {
+	SelfDamage: 'selfDamage',
+	Block: 'block',
+	Draw: 'draw',
+	...DamageEffect
+} as const
+export type DamageEffect = (typeof DamageEffect)[keyof typeof DamageEffect]
+export type CardEffect = (typeof CardEffect)[keyof typeof CardEffect]
+type CardEffectEntry = { kind: CardEffect; amount: number }
 
 /*
 	TODO: Card type (spell / attack / permanent)
 				Card targets (single / multi)
 */
-
 export type Card = WithId & {
 	readonly name: string
 	readonly description: string
@@ -27,7 +35,7 @@ export async function validateCards() {
 
 	const cardEffectSchema = v.array(
 		v.object({
-			kind: v.union(CARD_EFFECT_KIND.map((l) => v.literal(l))),
+			kind: v.union(Object.keys(CardEffect).map((key) => v.literal(key as CardEffect))),
 			amount: positiveInt()
 		})
 	)

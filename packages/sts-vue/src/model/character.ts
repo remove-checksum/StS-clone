@@ -1,47 +1,62 @@
+import { DamageEffect } from './card'
 import { Defaults } from './round'
 
-export const CHARACTER_STATUS_KIND = ['block', 'bleed'] as const
-export type CharacterStatusKind = (typeof CHARACTER_STATUS_KIND)[number]
-type StatusUpdate = Partial<Record<CharacterStatusKind, number>>
+export const TargetStatus = {
+	Block: 'block',
+	Bleed: 'bleed'
+} as const
+export type TargetStatus = (typeof TargetStatus)[keyof typeof TargetStatus]
+type StatusUpdate = Partial<Record<TargetStatus, number>>
+type StatusEntry = readonly [TargetStatus, number]
 
-export class Character {
-	public statuses: Map<CharacterStatusKind, number>
-	public health: number
-
+export class Target {
+	public statuses: Map<TargetStatus, number>
 	constructor(
 		public name: string,
-		public resource: number = Defaults.Resource,
-		public initialHealth: number = Defaults.Health,
+		public maxHealth = Defaults.Health,
+		public health = maxHealth,
 		initialStatuses: StatusUpdate = {}
 	) {
-		this.health = initialHealth
-		this.statuses = new Map(Object.entries(initialStatuses) as any)
+		this.statuses = new Map(Object.entries(initialStatuses) as Array<StatusEntry>)
 	}
 
 	get isAlive() {
 		return this.health > 0
 	}
 
-	takeShieldedDamage(amount: number) {
-		const shield = this.statuses.get('block')
+	takeDamage(kind: DamageEffect, amount: number) {
+		if (amount <= 0) return
 
-		if (shield && shield > 0) {
-			if (amount > shield) {
-				this.health -= amount - shield
-				this.statuses.delete('block')
-			} else {
-				this.statuses.set('block', shield - amount)
+		switch (kind) {
+			case DamageEffect.Pierce: {
+				this.health -= amount
+				break
 			}
-		} else {
-			this.health -= amount
+			case DamageEffect.Damage: {
+				const block = this.statuses.get(TargetStatus.Block) ?? 0
+
+				if (amount > block) {
+					this.health -= amount - block
+					this.statuses.delete(TargetStatus.Block)
+				} else {
+					this.statuses.set(TargetStatus.Block, block - amount)
+				}
+				break
+			}
+			default:
+				throw new Error(`Unknown damage kind: ${kind}`)
 		}
 	}
+}
 
-	setStatus(kind: CharacterStatusKind, value: number) {
-		if (value <= 0) {
-			this.statuses.delete(kind)
-		} else {
-			this.statuses.set(kind, value)
-		}
+export class Player extends Target {
+	constructor(
+		public name: string,
+		public maxHealth = Defaults.Health,
+		public health = maxHealth,
+		public resource: number = Defaults.Resource,
+		initialStatuses: StatusUpdate = {}
+	) {
+		super(name, maxHealth, health, initialStatuses)
 	}
 }

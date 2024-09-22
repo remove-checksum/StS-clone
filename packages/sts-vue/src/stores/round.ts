@@ -2,14 +2,16 @@ import { defineStore } from 'pinia'
 import { computed, reactive, ref } from 'vue'
 import { cards } from '@/model/cards.json'
 import type { Card } from './round'
-import { Character } from '@/model/character'
+import { Player, Target } from '@/model/character'
 import { GameRound, Defaults } from '@/model/round'
 
 function makeRound() {
-	const player = new Character('Clad', 10, 20, { block: 4 })
+	const playerHealth = 10
+	const playerResource = 10
+	const player = new Player('Clad', playerHealth, playerHealth, playerResource, { block: 4 })
 	const enemies = new Map([
-		['wurm', new Character('Wurm', Defaults.Resource, Defaults.Health, { block: 4 })],
-		['gremlin', new Character('Gremlin')]
+		['wurm', new Target('Wurm', Defaults.Health, Defaults.Health, { block: 4 })],
+		['gremlin', new Target('Gremlin')]
 	])
 
 	const [strike, block, heave, scan, heavyStrike, stab, whoops] = cards
@@ -40,11 +42,19 @@ export type { Card } from '@/model/card'
 export const useRoundStore = defineStore('game', () => {
 	const __roundNonReactive = makeRound()
 	const round = reactive(__roundNonReactive)
-	const deck = computed(() => round.deck)
+	const deck = computed(() => {
+		return {
+			drawPile: round.deck.drawPile.map((id) => round.deck.cardById(id)),
+			discardPile: round.deck.discardPile.map((id) => round.deck.cardById(id)),
+			hand: round.deck.hand.map((id) => round.deck.cardById(id)),
+			size: round.deck.drawPile.length + round.deck.hand.length + round.deck.discardPile.length
+		}
+	})
+
 	const player = computed(() => round.player)
 	const enemies = computed(() => round.enemies)
+	const selectedEnemyKey = computed(() => round.selectedEnemyKey)
 
-	const selectedEnemyKey = ref(round.selectedEnemyKey)
 	const selectedHandIndex = ref(-1)
 	const selectedHandCard = computed(() =>
 		selectedHandIndex.value > -1 ? round.deck.cardInHandAt(selectedHandIndex.value) : null
@@ -54,10 +64,13 @@ export const useRoundStore = defineStore('game', () => {
 		selectedHandIndex.value = index
 	}
 
-	round.deck.draw(5)
-
-	function playCard(position: number) {
-		round.tryPlayFromHand(position)
+	function playSelectedCard() {
+		if (selectedHandIndex.value > -1) {
+			const success = round.tryPlayFromHand(selectedHandIndex.value)
+			if (success) {
+				selectedHandIndex.value = -1
+			}
+		}
 	}
 
 	function getCardById(id: number) {
@@ -72,9 +85,8 @@ export const useRoundStore = defineStore('game', () => {
 		round.deck.draw(Defaults.Draw)
 	}
 
-	function changeSelectedEnemy(enemyKey: string) {
+	function selectEnemy(enemyKey: string) {
 		round.selectEnemy(enemyKey)
-		selectedEnemyKey.value = round.selectedEnemyKey
 	}
 
 	return {
@@ -87,9 +99,9 @@ export const useRoundStore = defineStore('game', () => {
 		selectedHandCard,
 		selectCardInHand,
 		getCardById,
-		getCardByHandIndex: cardInHandAt,
-		changeSelectedEnemy,
-		playCard,
+		cardInHandAt,
+		selectEnemy,
+		playSelectedCard,
 		startRound
 	}
 })

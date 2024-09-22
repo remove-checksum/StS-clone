@@ -1,15 +1,15 @@
 <template>
-	<div :class="[, $props.selected && 'bg-green-500']">
-		<h4 class="text-xl">{{ target.name }}</h4>
+	<div>
+		<h4 class="text-xl">{{ player.name }}</h4>
 		<div class="flex items-start">
-			<StatusIcon :stat="target.resource">
+			<StatusIcon :stat="player.resource">
 				<Circle
 					class="text-blue-400"
 					:class="iconSizing"
 					:inline="true"
 				/>
 			</StatusIcon>
-			<StatusIcon :stat="target.health">
+			<StatusIcon :stat="player.health">
 				<Heart
 					class="text-pink-800"
 					:class="iconSizing"
@@ -17,7 +17,7 @@
 				/>
 			</StatusIcon>
 			<StatusIcon
-				v-for="[kind, amount] of target.statuses.entries()"
+				v-for="[kind, amount] of player.statuses.entries()"
 				:key="kind"
 				:stat="amount"
 			>
@@ -37,16 +37,15 @@ import Shield from '~icons/ph/shield-fill'
 import HalfDrop from '~icons/pixelarticons/drop-half'
 import Circle from '~icons/ph/circle-fill'
 import StatusIcon from './StatusIcon.vue'
-import type { Character, CharacterStatusKind } from '@/model/character'
+import type { Player, TargetStatus } from '@/model/character'
 import { type FunctionalComponent } from 'vue'
 
 defineProps<{
-	target: Character
-	selected: boolean
+	player: Player
 }>()
 
 const iconSizing = 'h-8 w-8 text-blue-400 md:h-12 md:w-12'
-const iconStatusMap: Record<CharacterStatusKind, [FunctionalComponent, string]> = {
+const iconStatusMap: Record<TargetStatus, [FunctionalComponent, string]> = {
 	bleed: [HalfDrop, 'text-red-600'],
 	block: [Shield, 'text-stone-600']
 }

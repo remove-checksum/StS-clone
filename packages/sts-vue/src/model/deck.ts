@@ -53,6 +53,21 @@ export class Deck<T extends Card = Card> {
 	}
 
 	/**
+	 * Reorder cards in hand
+	 * @param from start index
+	 * @param to end index
+	 */
+	reorder(from: number, to: number) {
+		if (from === -1 || to === -1) return
+
+		const result = this.hand
+		const [removed] = result.splice(from, 1)
+		result.splice(to, 0, removed)
+
+		this._hand = result
+	}
+
+	/**
 	 * Draw from draw pile
 	 * @param count number of cards to draw
 	 */

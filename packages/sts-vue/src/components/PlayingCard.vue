@@ -9,9 +9,7 @@ defineProps<{
 	selected: boolean
 }>()
 
-defineExpose({
-	cardRef
-})
+defineExpose({ cardRef })
 
 const descriptionHovered = ref(false)
 </script>

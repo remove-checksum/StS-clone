@@ -5,6 +5,10 @@ import type { Card } from './round'
 import { Player, Target } from '@/model/character'
 import { GameRound, Defaults } from '@/model/round'
 
+async function delay(ms: number) {
+	return await new Promise((res) => setTimeout(res, ms))
+}
+
 function makeRound() {
 	const playerHealth = 20
 	const playerResource = 3
@@ -53,6 +57,7 @@ export const useRoundStore = defineStore('game', () => {
 		}
 	})
 
+	const cards = ref<Array<Card>>([])
 	const roundState = computed(() => round.roundState)
 	const player = computed(() => round.player)
 	const enemies = computed(() => round.enemies)
@@ -71,6 +76,24 @@ export const useRoundStore = defineStore('game', () => {
 		if (selectedHandIndex.value > -1) {
 			const success = round.tryPlayFromHand(selectedHandIndex.value)
 			selectedHandIndex.value = -1
+		}
+	}
+
+	async function discardHand() {
+		while (round.deck.hand.length) {
+			await delay(400)
+			round.deck.discardAt(round.deck.hand.length - 1)
+		}
+	}
+
+	async function draw(count: number) {
+		round.deck.draw(count)
+		let i = round.deck.hand.length - 1
+		while (round.deck.hand.length < cards.value.length) {
+			await delay(400)
+			const cardId = round.deck.hand[i]
+			cards.value = [...cards.value, round.deck.cardById(cardId)]
+			i--
 		}
 	}
 
@@ -100,6 +123,8 @@ export const useRoundStore = defineStore('game', () => {
 		selectedEnemyKey,
 		selectedHandIndex,
 		selectedHandCard,
+		draw,
+		discardHand,
 		selectCardInHand,
 		getCardById,
 		cardInHandAt,

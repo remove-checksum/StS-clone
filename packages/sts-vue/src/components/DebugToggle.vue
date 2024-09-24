@@ -2,8 +2,9 @@
 import BaseButton from './BaseButton.vue'
 import { useRoundStore } from '@/stores/round'
 import { Defaults } from '@/model/round'
-import { useRoute, useRouter } from 'vue-router';
-import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router'
+import { computed, ref, toValue } from 'vue'
+import { number } from 'valibot'
 
 const roundStore = useRoundStore()
 const route = useRoute()
@@ -21,10 +22,8 @@ const debugPopup = computed({
 function drawOne() {
 	roundStore.__roundNonReactive.deck.draw(1)
 }
-function discardHand() {
-	while (roundStore.__roundNonReactive.deck.hand.length > 0) {
-		roundStore.__roundNonReactive.deck.discardAt(0)
-	}
+async function discardHand() {
+	return await roundStore.discardHand()
 }
 function shuffle() {
 	discardHand()
@@ -32,6 +31,29 @@ function shuffle() {
 }
 function addPlayerResource() {
 	roundStore.__roundNonReactive.player.resource += 1
+}
+
+const from = ref(0)
+const to = ref(0)
+
+function reorder() {
+	const fro = toValue(from)
+	const too = toValue(to)
+
+	if (
+		Number.isNaN(fro) ||
+		Number.isNaN(to) ||
+		fro < 0 ||
+		too < 0 ||
+		fro > roundStore.deck.hand.length ||
+		too > roundStore.deck.hand.length
+	) {
+		return
+	}
+
+	roundStore.round.deck.reorder(+from.value, +to.value)
+	from.value = 0
+	to.value = 0
 }
 </script>
 <template>
@@ -49,6 +71,19 @@ function addPlayerResource() {
 			<BaseButton @click="drawOne">Draw One</BaseButton>
 			<BaseButton @click="shuffle">Shuffle</BaseButton>
 			<BaseButton @click="addPlayerResource">Add Resource</BaseButton>
+			<div class="text-base">
+				from: <input
+					v-model.number="from"
+					type="number"
+					class="w-12 border border-black"
+				/> to:
+				<input
+					v-model.number="to"
+					type="number"
+					class="w-12 border border-black"
+				/>
+				<BaseButton @click="reorder">Reorder</BaseButton>
+			</div>
 		</div>
 	</div>
 </template>

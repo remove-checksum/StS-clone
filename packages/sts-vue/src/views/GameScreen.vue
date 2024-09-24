@@ -4,9 +4,10 @@ import { ref, onMounted } from 'vue'
 import { useRoundStore } from '@/stores/round'
 import PlayerCard from '@/components/PlayerCard.vue'
 import EnemyCard from '@/components/EnemyCard.vue'
-import CardHand from '@/components/CardHand.vue'
 import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { assert } from '@/model/assert'
+import CardPanel from '@/components/CardPanel.vue'
+import PlayingCard from '@/components/PlayingCard.vue'
 
 const roundStore = useRoundStore()
 
@@ -63,42 +64,29 @@ onMounted(() => roundStore.startRound())
 				class="h-12 w-12 bg-zinc-200 duration-200 hover:rotate-90"
 			></div>
 		</header>
-		<div class="grid grow grid-flow-row grid-cols-3 bg-gray-600">
-			<div class="bg-zinc-300">
+		<div class="grid grow grid-flow-row grid-cols-2 bg-zinc-400">
+			<div class="p-20">
 				<h3 class="text-center text-2xl">Player</h3>
 				<PlayerCard :player="roundStore.player" />
 			</div>
-			<div>
-				<div
-					ref="cardPlayDropZone"
-					class="grid h-1/2 w-full place-self-center bg-zinc-400"
-					:class="[
-						'ring-inset ring-white transition-[box-shadow] duration-200',
-						roundStore.selectedHandIndex > -1 ? 'ring-4' : 'ring-0',
-						cardInDropZone ? 'ring-8' : 'ring-0'
-					]"
-				>
-					<h3
-						v-if="roundStore.selectedHandCard"
-						class="cursor-pointer place-self-center text-3xl underline"
-						@click="roundStore.playSelectedCard"
-					>
-						Drop
-					</h3>
+			<div
+				ref="cardPlayDropZone"
+				class="m-20 flex flex-col gap-8 bg-teal-400"
+			>
+				<h3 class="mt-auto text-center text-2xl">Enemies</h3>
+				<div class="flex justify-center gap-2 p-4">
+					<EnemyCard
+						v-for="[key, enemy] of roundStore.enemies.entries()"
+						:key="key"
+						:enemy="enemy"
+						:selected="roundStore.selectedEnemyKey === key"
+						class="transition-transform hover:-translate-y-2 hover:cursor-pointer hover:shadow-2xl hover:shadow-cyan-600"
+						@click="roundStore.selectEnemy(key)"
+					/>
 				</div>
 			</div>
-			<div class="bg-zinc-300">
-				<h3 class="text-center text-2xl">Enemies</h3>
-				<EnemyCard
-					v-for="[key, enemy] of roundStore.enemies.entries()"
-					:key="key"
-					:enemy="enemy"
-					:selected="roundStore.selectedEnemyKey === key"
-					@click="roundStore.selectEnemy(key)"
-				/>
-			</div>
 		</div>
-		<CardHand />
+		<CardPanel />
 	</main>
 	<div
 		data-overlay-teleport

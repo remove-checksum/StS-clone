@@ -16,7 +16,7 @@ const playerStatString = computed(
 </script>
 
 <template>
-  <div class="grid min-h-24 grid-cols-12 justify-between lg:min-h-56">
+  <div class="grid min-h-24 grid-cols-12 justify-items-center lg:min-h-56">
     <div class="col-span-2 flex flex-col justify-between px-4 py-4">
       <StatusIcon
         :stat="playerStatString"

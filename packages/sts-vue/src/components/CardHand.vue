@@ -28,7 +28,7 @@ const cardSlots = ref<CardSlotsComponents | null>(null)
 const cardDropTarget = ref<HTMLDivElement | null>(null)
 const cards = ref<Array<ComponentInstance<typeof PlayingCard>> | null>(null)
 const dragCursorOffset = ref<{ x: number; y: number }>({ x: 0, y: 0 })
-const cardBreakpoints = ref<Array<readonly [number,number]>>([])
+const cardBreakpoints = ref<Array<readonly [number, number]>>([])
 const cursorOutsideDropZone = ref(false)
 
 function getListXBrekpoints(elements: Array<HTMLElement>) {
@@ -50,7 +50,6 @@ function getListXBrekpoints(elements: Array<HTMLElement>) {
 
 	return breakpoints
 }
-
 
 onMounted(() => {
 	assert(cardDropTarget.value)
@@ -147,35 +146,37 @@ onMounted(() => {
 </script>
 
 <template>
-	<div
-		ref="cardDropTarget"
-		:class="['col-span-8 flex justify-center overflow-x-clip']"
-	>
-		<TransitionGroup
-			move-class="transition-transform"
-			enter-from-class="-translate-x-40"
-			enter-to-class="translate-x-0"
-			leave-from-class="translate-x-0"
-			leave-to-class="translate-x-40"
+		<div
+			ref="cardDropTarget"
+			class="flex col-span-8 overflow-x-hidden"
 		>
-			<CardSlot
-				v-for="({ card, deckId }, index) of deck.hand"
-				:key="deckId"
-				ref="cardSlots"
-				class="flex justify-center"
-				:class="selectedHandIndex === index && cursorOutsideDropZone && 'basis-10'"
-				:data-list-order="index"
+			<TransitionGroup
+				move-class="transition-all duration-700"
+				enter-active-class="transition-all duration-700"
+				leave-active-class="transition-all duration-700 absolute"
+				enter-from-class="-translate-x-80 scale-50 opacity-0"
+				enter-to-class="translate-x-0"
+				leave-from-class="translate-x-0 "
+				leave-to-class="translate-x-80 scale-50 opacity-0"
 			>
-				<DraggablePlayingCard
-					ref="cards"
-					:card="card"
-					:deck-key="deckId"
-					:class="[selectedHandIndex === index && 'opacity-0 -z-10']"
+				<CardSlot
+					v-for="({ card, deckId }, index) of deck.hand"
+					:key="deckId"
+					ref="cardSlots"
+					class="flex justify-center"
+					:class="selectedHandIndex === index && cursorOutsideDropZone && 'basis-10'"
+					:data-list-order="index"
 				>
-				</DraggablePlayingCard>
-			</CardSlot>
-		</TransitionGroup>
-	</div>
+					<DraggablePlayingCard
+						ref="cards"
+						:card="card"
+						:deck-key="deckId"
+						:class="[selectedHandIndex === index && 'opacity-0 -z-10']"
+					>
+					</DraggablePlayingCard>
+				</CardSlot>
+			</TransitionGroup>
+		</div>
 	<DndOverlayTeleport v-if="selectedHandCard && position.x > -1 && position.y > -1">
 		<PlayingCard
 			v-if="!isCardDragged"

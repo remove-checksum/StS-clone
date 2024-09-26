@@ -1,9 +1,5 @@
 <script setup lang="ts">
-import {
-	ref,
-	onMounted,
-	type ComponentInstance,
-} from 'vue'
+import { ref, onMounted, type ComponentInstance } from 'vue'
 import {
 	dropTargetForElements,
 	monitorForElements
@@ -32,6 +28,7 @@ const cardSlots = ref<CardSlotsComponents | null>(null)
 const cardDropTarget = ref<HTMLDivElement | null>(null)
 const cards = ref<Array<ComponentInstance<typeof PlayingCard>> | null>(null)
 const dragCursorOffset = ref<{ x: number; y: number }>({ x: 0, y: 0 })
+const cardBreakpoints = ref<Array<readonly [number,number]>>([])
 const cursorOutsideDropZone = ref(false)
 
 function getListXBrekpoints(elements: Array<HTMLElement>) {
@@ -54,6 +51,7 @@ function getListXBrekpoints(elements: Array<HTMLElement>) {
 	return breakpoints
 }
 
+
 onMounted(() => {
 	assert(cardDropTarget.value)
 
@@ -75,7 +73,21 @@ onMounted(() => {
 				input: location.initial.input
 			})({ container: card })
 
-			const cardIndex = roundStore.deck.hand.findIndex(({deckId}) => deckId === source.data.deckKey)
+			const cardIndex = roundStore.deck.hand.findIndex(
+				({ deckId }) => deckId === source.data.deckKey
+			)
+
+			if (cardSlots.value) {
+				cardBreakpoints.value = getListXBrekpoints(
+					cardSlots.value
+						.map((el) => el.cardSlot)
+						.sort(
+							(a, b) =>
+								(a!.dataset.listOrder as unknown as number) -
+								(b!.dataset.listOrder as unknown as number)
+						) as Array<HTMLElement>
+				)
+			}
 
 			selectCardInHand(cardIndex)
 		},
@@ -98,16 +110,16 @@ onMounted(() => {
 
 				const relativeToCardsX = clientX - firstCardX
 
-				const slotElements = cardSlots.value
-					.map((el) => el.cardSlot)
-					.sort((a, b) => {
-						const indexA = a!.dataset.cardIndex as unknown as number
-						const indexB = b!.dataset.cardIndex as unknown as number
-						return indexA - indexB
-					}) as Array<HTMLElement>
+				// const slotElements = cardSlots.value
+				// 	.map((el) => el.cardSlot)
+				// 	.sort((a, b) => {
+				// 		const indexA = a!.dataset.cardIndex as unknown as number
+				// 		const indexB = b!.dataset.cardIndex as unknown as number
+				// 		return indexA - indexB
+				// 	}) as Array<HTMLElement>
 
-				const cardBreakpoints = getListXBrekpoints(slotElements)
-				const index = cardBreakpoints.findIndex(
+				// const cardBreakpoints = getListXBrekpoints(slotElements)
+				const index = cardBreakpoints.value.findIndex(
 					([from, to]) => relativeToCardsX > from && relativeToCardsX < to
 				)
 
@@ -128,6 +140,7 @@ onMounted(() => {
 			selectCardInHand(-1)
 			dragCursorOffset.value = { x: 0, y: 0 }
 			resetPosition()
+			cardBreakpoints.value = []
 		}
 	})
 })
@@ -146,17 +159,18 @@ onMounted(() => {
 			leave-to-class="translate-x-40"
 		>
 			<CardSlot
-				v-for="({card, deckId}, index) of deck.hand"
+				v-for="({ card, deckId }, index) of deck.hand"
 				:key="deckId"
 				ref="cardSlots"
-				:class="['flex justify-center bg-orange-500 ring-1 ring-red-700']"
-				:data-card-index="index"
+				class="flex justify-center"
+				:class="selectedHandIndex === index && cursorOutsideDropZone && 'basis-10'"
+				:data-list-order="index"
 			>
 				<DraggablePlayingCard
 					ref="cards"
 					:card="card"
 					:deck-key="deckId"
-					:class="[selectedHandIndex === index && 'opacity-0']"
+					:class="[selectedHandIndex === index && 'opacity-0 -z-10']"
 				>
 				</DraggablePlayingCard>
 			</CardSlot>

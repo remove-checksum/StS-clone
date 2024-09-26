@@ -3,12 +3,6 @@ import {
 	ref,
 	onMounted,
 	type ComponentInstance,
-	computed,
-	getCurrentInstance,
-	watch,
-	watchEffect,
-	toValue,
-	nextTick
 } from 'vue'
 import {
 	dropTargetForElements,
@@ -21,140 +15,108 @@ import { useRoundStore } from '@/stores/round'
 import { usePositioning } from '@/composables/usePositioning'
 import { storeToRefs } from 'pinia'
 import CardSlot from './CardSlot.vue'
-import animate from 'animejs'
 import { preserveOffsetOnSource } from '@atlaskit/pragmatic-drag-and-drop/element/preserve-offset-on-source'
 import { assert } from '@/model/assert'
+import { isCardData } from '@/helpers/isCardData'
 
 const roundStore = useRoundStore()
 const { selectedHandCard, selectedHandIndex, deck } = storeToRefs(roundStore)
 const { selectCardInHand } = roundStore
 
-const cardsInHand = ref<Array<ComponentInstance<typeof DraggablePlayingCard>> | null>(null)
-
 const isCardDragged = ref(false)
 const { position, style, resetPosition } = usePositioning({ x: -1, y: -1 })
 
-const cardSlots = ref<Array<ComponentInstance<typeof CardSlot>> | null>(null)
+type CardSlotsComponents = Array<ComponentInstance<typeof CardSlot>>
+
+const cardSlots = ref<CardSlotsComponents | null>(null)
 const cardDropTarget = ref<HTMLDivElement | null>(null)
 const cards = ref<Array<ComponentInstance<typeof PlayingCard>> | null>(null)
 const dragCursorOffset = ref<{ x: number; y: number }>({ x: 0, y: 0 })
 const cursorOutsideDropZone = ref(false)
 
-function selectCard(index: number) {
-	selectCardInHand(index)
+function getListXBrekpoints(elements: Array<HTMLElement>) {
+	const elementRects = elements.map((el) => el.getBoundingClientRect())
 
-	const cardRef = cardsInHand.value?.at(index)
-
-	if (cardRef) {
-		const rect = cardRef.getCardRect()!
-
-		position.value = {
-			x: 400,
-			y: 400
-		}
-	}
-}
-
-function unselectCard() {
-	selectCardInHand(-1)
-	resetPosition()
-}
-
-function cardPicked(index: number) {
-	selectCardInHand(index)
-}
-
-function getCardSlotIndex(slots: Array<ComponentInstance<typeof CardSlot>>, pointerX: number) {
-	const elements = toValue(slots)
-		.map((element) => element.cardSlot!.getBoundingClientRect())
-		.sort((a, b) => a.x - b.x)
-
-	const containerOriginX = elements[0].x
+	const elementOriginX = elementRects[0].x
 
 	const breakpoints = []
 
 	for (let i = 0; i < elements.length; i++) {
-		const rect = elements[i]
+		const { x, width } = elementRects[i]
 		const isLast = i === elements.length - 1
-		const leftX = rect.x - containerOriginX
-		const rightX = isLast ? leftX + rect.width : elements[i + 1].x - containerOriginX
+		const leftX = x - elementOriginX
 
-		breakpoints.push([leftX, rightX])
+		let rightX = isLast ? leftX + width : elementRects[i + 1].x - elementOriginX
+
+		breakpoints.push([leftX, rightX] as const)
 	}
-	return breakpoints.findIndex(([from, to]) => pointerX > from && pointerX < to)
-}
 
-function cardDropped() {
-	selectedHandIndex.value = -1
-	isCardDragged.value = false
-	resetPosition()
-}
-
-function getAnimationStartingPoint() {
-	return cardDropTarget.value!.getBoundingClientRect().left
-}
-
-function animateStaggeredEnter(el: Element) {
-	const x = el.getBoundingClientRect().x
-	const startingPoint = getAnimationStartingPoint() + x
-	animate({
-		targets: el,
-		translateX: [-startingPoint, 0],
-		rotate: [-90, 0],
-		scaleX: [0.2, 1],
-		scaleY: [0.2, 1],
-		duration: 500,
-		easing: 'easeInOutQuad'
-	})
-}
-
-function animateStaggeredLeave(el: Element, done: () => void) {
-	animate({
-		targets: el,
-		translateX: 400,
-		rotate: 90,
-		scale: 0.2,
-		duration: 500,
-		easing: 'linear',
-		complete: done
-	})
+	return breakpoints
 }
 
 onMounted(() => {
-	const dropTarget = cardDropTarget.value!
+	assert(cardDropTarget.value)
 
 	dropTargetForElements({
-		element: dropTarget,
+		element: cardDropTarget.value,
 		getData: () => {
 			return { name: 'cardHand' }
-		},
+		}
 	})
 
 	monitorForElements({
-		canMonitor: ({ source }) => 'cardIndex' in source.data,
+		canMonitor: ({ source }) => isCardData(source.data),
 		onDragStart: ({ source, location }) => {
+			if (!isCardData(source.data)) return
+
 			const card = source.element
 			dragCursorOffset.value = preserveOffsetOnSource({
 				element: card,
 				input: location.initial.input
 			})({ container: card })
 
-			assert(typeof source.data.cardIndex === 'number')
+			const cardIndex = roundStore.deck.hand.findIndex(({deckId}) => deckId === source.data.deckKey)
 
-			selectCardInHand(source.data.cardIndex)
+			selectCardInHand(cardIndex)
 		},
-		onDrag: ({ location }) => {
+		onDrag: ({ location, source }) => {
 			const { clientX, clientY } = location.current.input
+
+			assert(cardDropTarget.value && cardSlots.value)
+			if (!isCardData(source.data)) return
 
 			isCardDragged.value = true
 
-			const { x, y } = cardDropTarget.value!.getBoundingClientRect()
-			cursorOutsideDropZone.value = clientY < y
+			if (cardSlots.value && cardDropTarget.value.firstElementChild) {
+				const { clientX: prevClientX } = source.data.previousInput
+				const { x: firstCardX, y: firstCardY } =
+					cardDropTarget.value.firstElementChild.getBoundingClientRect()
 
-			if (cardSlots.value) {
-				const idx = getCardSlotIndex(cardSlots, clientX - dragCursorOffset.value.x - x)
-				roundStore.round.deck.reorder(selectedHandIndex.value, idx)
+				const dragXDirection = Math.sign(clientX - prevClientX) as 0 | 1 | -1
+
+				cursorOutsideDropZone.value = clientY < firstCardY
+
+				const relativeToCardsX = clientX - firstCardX
+
+				const slotElements = cardSlots.value
+					.map((el) => el.cardSlot)
+					.sort((a, b) => {
+						const indexA = a!.dataset.cardIndex as unknown as number
+						const indexB = b!.dataset.cardIndex as unknown as number
+						return indexA - indexB
+					}) as Array<HTMLElement>
+
+				const cardBreakpoints = getListXBrekpoints(slotElements)
+				const index = cardBreakpoints.findIndex(
+					([from, to]) => relativeToCardsX > from && relativeToCardsX < to
+				)
+
+				if (index !== -1 && index !== selectedHandIndex.value && dragXDirection !== 0) {
+					roundStore.reorder(selectedHandIndex.value, index)
+				}
 			}
+
+			source.data.previousInput = location.current.input
 
 			position.value = {
 				x: clientX - dragCursorOffset.value.x,
@@ -176,24 +138,25 @@ onMounted(() => {
 		ref="cardDropTarget"
 		:class="['col-span-8 flex justify-center overflow-x-clip']"
 	>
-		<TransitionGroup move-class="transition-all duration-700">
+		<TransitionGroup
+			move-class="transition-transform"
+			enter-from-class="-translate-x-40"
+			enter-to-class="translate-x-0"
+			leave-from-class="translate-x-0"
+			leave-to-class="translate-x-40"
+		>
 			<CardSlot
-				v-for="(card, index) of deck.hand"
-				:key="index"
+				v-for="({card, deckId}, index) of deck.hand"
+				:key="deckId"
 				ref="cardSlots"
-				:class="[
-					'flex justify-center bg-orange-500 ring-1 ring-red-700',
-					// 'transition-[flex-basis]'
-					// selectedHandIndex === index && cursorOutsideDropZone ? 'lg:basis-6' : 'lg:basis-36'
-				]"
+				:class="['flex justify-center bg-orange-500 ring-1 ring-red-700']"
 				:data-card-index="index"
 			>
 				<DraggablePlayingCard
 					ref="cards"
 					:card="card"
-					:drag-data="{ cardIndex: index }"
-					:class="selectedHandIndex === index && 'opacity-50'"
-					@mouseup="selectCard(index)"
+					:deck-key="deckId"
+					:class="[selectedHandIndex === index && 'opacity-0']"
 				>
 				</DraggablePlayingCard>
 			</CardSlot>
@@ -206,7 +169,6 @@ onMounted(() => {
 			:selected="true"
 			:style="style"
 			class="pointer-events-auto absolute"
-			@click="unselectCard"
 		/>
 		<PlayingCard
 			v-if="isCardDragged"

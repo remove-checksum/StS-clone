@@ -1,6 +1,6 @@
 import { Player, Target, TargetStatus } from '@/model/character'
 import { CardEffect, DamageEffect, type Card } from '@/model/card'
-import { Deck } from '@/model/deck'
+import { Deck, type DeckEntryInitializer } from '@/model/deck'
 
 export const Defaults = {
 	Draw: 4,
@@ -19,16 +19,19 @@ export type RoundState = (typeof RoundState)[keyof typeof RoundState]
 export class GameRound<T extends string> {
 	public roundState: RoundState = RoundState.Initial
 	public nextEnemyAt: number
+	public deck: Deck
 
 	public selectedEnemyKey: T
 	constructor(
 		public player: Player,
 		public enemies: Map<T, Target>,
-		public cards: Array<Card>,
-		public deck = new Deck(cards)
+		public deckInitializers: Array<DeckEntryInitializer>,
+		public cardRegistry: Map<number, Card>
 	) {
 		this.selectedEnemyKey = Array.from(enemies.keys()).at(0)!
 		this.nextEnemyAt = 0
+
+		this.deck = new Deck(deckInitializers)
 	}
 
 	/**
@@ -37,14 +40,14 @@ export class GameRound<T extends string> {
 	 * @returns was played succesfully
 	 */
 	tryPlayFromHand(position: number) {
-		const cardId = this.deck.hand.at(position)
+		const cardId = this.deck.idInHandAt(position)
 
 		if (!cardId) {
 			console.error(`No card in hand at position ${position}`)
 			return false
 		}
 
-		const card = this.deck.cards.get(cardId)
+		const card = this.cardRegistry.get(cardId)
 
 		if (!card) {
 			console.error(`No card in deck with id ${cardId}`)

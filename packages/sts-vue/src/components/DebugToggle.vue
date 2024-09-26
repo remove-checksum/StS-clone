@@ -4,7 +4,6 @@ import { useRoundStore } from '@/stores/round'
 import { Defaults } from '@/model/round'
 import { useRoute, useRouter } from 'vue-router'
 import { computed, ref, toValue } from 'vue'
-import { number } from 'valibot'
 
 const roundStore = useRoundStore()
 const route = useRoute()

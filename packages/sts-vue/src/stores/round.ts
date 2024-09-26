@@ -4,6 +4,8 @@ import { cards } from '@/model/cards.json'
 import type { Card } from './round'
 import { Player, Target } from '@/model/character'
 import { GameRound, Defaults } from '@/model/round'
+import { cardRegistry } from '@/model/card'
+import type { DeckEntry } from '@/model/deck'
 
 async function delay(ms: number) {
 	return await new Promise((res) => setTimeout(res, ms))
@@ -37,9 +39,9 @@ function makeRound() {
 		heavyStrike,
 		stab,
 		whoops
-	]
+	].map((card) => ({ ...card, handId: crypto.randomUUID() }))
 
-	const round = new GameRound(player, enemies, roundCards as Array<Card>)
+	const round = new GameRound(player, enemies, roundCards, cardRegistry)
 	return round
 }
 
@@ -48,11 +50,17 @@ export type { Card } from '@/model/card'
 export const useRoundStore = defineStore('game', () => {
 	const __roundNonReactive = makeRound()
 	const round = reactive(__roundNonReactive)
+
+	function mapDeckEntry(entry: DeckEntry) {
+		const [deckId, cardId] = entry
+		return { deckId: deckId, card: round.cardRegistry.get(cardId)! }
+	}
+
 	const deck = computed(() => {
 		return {
-			drawPile: round.deck.drawPile.map((id) => round.deck.cardById(id)),
-			discardPile: round.deck.discardPile.map((id) => round.deck.cardById(id)),
-			hand: round.deck.hand.map((id) => round.deck.cardById(id)),
+			drawPile: round.deck.drawPile.map(mapDeckEntry),
+			discardPile: round.deck.discardPile.map(mapDeckEntry),
+			hand: round.deck.hand.map(mapDeckEntry),
 			size: round.deck.drawPile.length + round.deck.hand.length + round.deck.discardPile.length
 		}
 	})
@@ -64,9 +72,12 @@ export const useRoundStore = defineStore('game', () => {
 	const selectedEnemyKey = computed(() => round.selectedEnemyKey)
 
 	const selectedHandIndex = ref(-1)
-	const selectedHandCard = computed(() =>
-		selectedHandIndex.value > -1 ? round.deck.cardInHandAt(selectedHandIndex.value) : null
-	)
+	const selectedHandCard = computed(() => {
+		if (selectedHandIndex.value === -1) return null
+		const [_, cardId] = round.deck.hand[selectedHandIndex.value]
+
+		return cardRegistry.get(cardId)!
+	})
 
 	function selectCardInHand(index: number) {
 		selectedHandIndex.value = index
@@ -91,18 +102,18 @@ export const useRoundStore = defineStore('game', () => {
 		let i = round.deck.hand.length - 1
 		while (round.deck.hand.length < cards.value.length) {
 			await delay(400)
-			const cardId = round.deck.hand[i]
-			cards.value = [...cards.value, round.deck.cardById(cardId)]
+			const cardId = round.deck.idInHandAt(i)
+			cards.value = [...cards.value, round.cardRegistry.get(cardId)!]
 			i--
 		}
 	}
 
 	function getCardById(id: number) {
-		return round.deck.cardById(id)!
+		return round.cardRegistry.get(id)!
 	}
 
 	function cardInHandAt(index: number) {
-		return round.deck.cardInHandAt(index)
+		return round.deck.idInHandAt(index)
 	}
 
 	function startRound() {
@@ -111,6 +122,13 @@ export const useRoundStore = defineStore('game', () => {
 
 	function selectEnemy(enemyKey: string) {
 		round.selectEnemy(enemyKey)
+	}
+
+	function reorder(from: number, to: number) {
+		if (from === -1 || to === -1) return
+
+		round.deck.reorder(from, to)
+		selectedHandIndex.value = to
 	}
 
 	return {
@@ -124,6 +142,7 @@ export const useRoundStore = defineStore('game', () => {
 		selectedHandIndex,
 		selectedHandCard,
 		draw,
+		reorder,
 		discardHand,
 		selectCardInHand,
 		getCardById,

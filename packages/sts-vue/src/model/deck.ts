@@ -79,18 +79,6 @@ export class Deck<
 		this.hand.splice(position, 1)
 		this.discardPile.push(idToDiscard)
 	}
-
-	/**
-	 * Discard card by its id
-	 * @param id
-	 */
-	discard(id: number) {
-		// TODO: Cannot index CardTuple
-		const index = this.hand.findIndex((entry) => id === (entry as any)[1])
-		if (index >= 0) {
-			this.discardAt(index)
-		}
-	}
 }
 
 function FYshuffle<T extends unknown>(array: T[]) {

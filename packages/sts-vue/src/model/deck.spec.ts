@@ -52,8 +52,8 @@ describe.sequential('Deck', () => {
 
 		deck.draw(drawCount)
 
-		for (const id of deck.hand.slice(0, discardCount)) {
-			deck.discard(id)
+		for (let i = 0; i < discardCount; i++) {
+			deck.discardAt(deck.hand.length - 1)
 		}
 
 		expect(deck.discardPile.length).toBe(discardCount)
@@ -64,8 +64,8 @@ describe.sequential('Deck', () => {
 		const cardMoveCount = 5
 		deck.draw(cardMoveCount)
 
-		for (const id of deck.hand.slice(0, cardMoveCount)) {
-			deck.discard(id)
+		for (let i = 0; i < cardMoveCount; i++) {
+			deck.discardAt(deck.hand.length - 1)
 		}
 
 		expect(deck).toMatchInlineSnapshot(`Draw: A,B Hand: None Discard: G,F,E,D,C`)

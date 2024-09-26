@@ -4,6 +4,7 @@ import { useRoundStore } from '@/stores/round'
 import { Defaults } from '@/model/round'
 import { useRoute, useRouter } from 'vue-router'
 import { computed, ref, toValue } from 'vue'
+import { delay } from '@/helpers/delay'
 
 const roundStore = useRoundStore()
 const route = useRoute()
@@ -18,15 +19,41 @@ const debugPopup = computed({
 	}
 })
 
-function drawOne() {
-	roundStore.__roundNonReactive.deck.draw(1)
+const drawCount = ref(0)
+function inc() {
+	drawCount.value++
 }
+function dec() {
+	drawCount.value--
+}
+
+async function draw() {
+	if (!Number.isInteger(drawCount.value) || drawCount.value === 0) return
+	const change = Math.abs(drawCount.value)
+
+	if (drawCount.value > 0) {
+		for (let i = 0; i < change; i++) {
+			roundStore.round.deck.draw(1)
+		}
+	} else {
+		for (let i = 0; i < change; i++) {
+			roundStore.round.deck.discardAt(roundStore.round.deck.hand.length - 1)
+		}
+	}
+
+	drawCount.value = 0
+}
+
+function discardLast() {
+	roundStore.round.deck.discardAt(roundStore.deck.hand.length - 1)
+}
+
 async function discardHand() {
 	return await roundStore.discardHand()
 }
-function shuffle() {
-	discardHand()
-	roundStore.__roundNonReactive.deck.draw(Defaults.Draw)
+async function shuffle() {
+	await discardHand()
+	roundStore.round.deck.draw(Defaults.Draw)
 }
 function addPlayerResource() {
 	roundStore.__roundNonReactive.player.resource += 1
@@ -67,7 +94,14 @@ function reorder() {
 			class="absolute z-10 flex flex-col gap-2 border border-black bg-gray-50 p-2"
 		>
 			<BaseButton @click="discardHand">Discard Hand</BaseButton>
-			<BaseButton @click="drawOne">Draw One</BaseButton>
+			<BaseButton @click="discardLast">Discard Last</BaseButton>
+			<div class="flex gap-2">
+				<BaseButton @click="inc">add</BaseButton>
+				<BaseButton @click="dec">remove</BaseButton>
+				<BaseButton @click="draw">Draw
+					<div class="">{{ drawCount }}</div>
+				</BaseButton>
+			</div>
 			<BaseButton @click="shuffle">Shuffle</BaseButton>
 			<BaseButton @click="addPlayerResource">Add Resource</BaseButton>
 			<div class="text-base">

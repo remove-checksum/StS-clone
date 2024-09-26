@@ -18,14 +18,15 @@ const descriptionHovered = ref(false)
 	<div
 		ref="cardRef"
 		:class="[
-			'aspect-[0.72/1] h-28 w-20 select-none border-2 border-black lg:h-[12.5rem] lg:w-36 relative bg-sky-500',
-			$props.selected && 'ring-4 ring-pink-300 ring-inset']"
-		:style="($attrs.style as string)"
+			'relative aspect-[0.72/1] h-28 w-20 select-none border-2 border-black bg-sky-500 lg:h-[12.5rem] lg:w-36',
+			$props.selected && 'ring-4 ring-inset ring-pink-300'
+		]"
+		:style="$attrs.style as string"
 	>
-		<div class="flex flex-col h-full">
+		<div class="flex h-full flex-col">
 			<div class="bg-emerald-500">
 				<p
-					class="h-8 w-8 inline-block bg-slate-400 pl-2 tabular-nums mr-2"
+					class="mr-2 inline-block h-8 w-8 bg-slate-400 pl-2 tabular-nums"
 					:class="$style.cardBadgeClip"
 				>
 					{{ card.cost }}
@@ -44,7 +45,7 @@ const descriptionHovered = ref(false)
 			>
 				Description!
 			</p>
-			<p class="h-8 w-8 bg-slate-400 pl-2 mt-auto">ID:{{ card.id }}</p>
+			<p class="mt-auto h-8 w-8 bg-slate-400 pl-2">ID:{{ card.id }}</p>
 		</div>
 	</div>
 </template>

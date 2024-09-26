@@ -1,15 +1,11 @@
 import { defineStore } from 'pinia'
 import { computed, reactive, ref } from 'vue'
 import { cards } from '@/model/cards.json'
-import type { Card } from './round'
 import { Player, Target } from '@/model/character'
 import { GameRound, Defaults } from '@/model/round'
 import { cardRegistry } from '@/model/card'
 import type { DeckEntry } from '@/model/deck'
 
-async function delay(ms: number) {
-	return await new Promise((res) => setTimeout(res, ms))
-}
 
 function makeRound() {
 	const playerHealth = 20
@@ -65,7 +61,6 @@ export const useRoundStore = defineStore('game', () => {
 		}
 	})
 
-	const cards = ref<Array<Card>>([])
 	const roundState = computed(() => round.roundState)
 	const player = computed(() => round.player)
 	const enemies = computed(() => round.enemies)
@@ -91,20 +86,15 @@ export const useRoundStore = defineStore('game', () => {
 	}
 
 	async function discardHand() {
-		while (round.deck.hand.length) {
-			await delay(400)
+		const cardHandCount = round.deck.hand.length
+		for (let i = 0; i < cardHandCount; i++) {
 			round.deck.discardAt(round.deck.hand.length - 1)
 		}
 	}
 
 	async function draw(count: number) {
-		round.deck.draw(count)
-		let i = round.deck.hand.length - 1
-		while (round.deck.hand.length < cards.value.length) {
-			await delay(400)
-			const cardId = round.deck.idInHandAt(i)
-			cards.value = [...cards.value, round.cardRegistry.get(cardId)!]
-			i--
+		for (let i = 0; i < count; i++) {
+			round.deck.draw(1)
 		}
 	}
 

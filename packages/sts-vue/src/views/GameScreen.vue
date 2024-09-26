@@ -7,7 +7,6 @@ import EnemyCard from '@/components/EnemyCard.vue'
 import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { assert } from '@/model/assert'
 import CardPanel from '@/components/CardPanel.vue'
-import PlayingCard from '@/components/PlayingCard.vue'
 
 const roundStore = useRoundStore()
 

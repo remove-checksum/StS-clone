@@ -1,5 +1,13 @@
+import * as v from 'valibot'
+import { cards } from '@/model/cards.json'
+import type { GenericSchema } from 'valibot'
+
 export type WithId = {
 	readonly id: number
+}
+
+export type WithHandId = {
+	readonly handId: ReturnType<typeof crypto.randomUUID>
 }
 
 export const DamageEffect = {
@@ -27,15 +35,19 @@ export type Card = WithId & {
 	readonly effect: Array<CardEffectEntry>
 }
 
-export async function validateCards() {
-	type GenericSchema<T> = import('valibot').GenericSchema<T>
-	const v = await import('valibot')
+export const cardRegistry = initCardRegistry(cards)
 
+export function initCardRegistry(cards: unknown) {
+	const result = validateCards(cards)
+	return new Map<number, Card>(result.map((card) => [card.id, card]))
+}
+
+export function validateCards(cards: unknown) {
 	const positiveInt = () => v.pipe(v.number(), v.integer(), v.minValue(0))
 
 	const cardEffectSchema = v.array(
 		v.object({
-			kind: v.union(Object.keys(CardEffect).map((key) => v.literal(key as CardEffect))),
+			kind: v.union(Object.values(CardEffect).map((value) => v.literal(value))),
 			amount: positiveInt()
 		})
 	)
@@ -48,5 +60,7 @@ export async function validateCards() {
 		effect: cardEffectSchema
 	})
 
-	return v.parse(v.array(cardSchema), (await import('./cards.json')).cards)
+	const cardsSchema = v.array(cardSchema)
+
+	return v.parse(cardsSchema, cards)
 }

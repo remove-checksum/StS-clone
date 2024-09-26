@@ -1,53 +1,43 @@
-import type { Card } from '@/model/card'
+import type { WithId, WithHandId } from '@/model/card'
 
 export const HAND_LIMIT = 10
 
-export class Deck<T extends Card = Card> {
-	public cards: Map<number, T>
-	private _drawPile: Array<number>
-	private _hand: Array<number> = []
-	private _discardPile: Array<number> = []
+export type DeckEntryInitializer = WithHandId & WithId
+export type DeckEntry = [DeckEntryInitializer['handId'], DeckEntryInitializer['id']]
 
-	get drawPile() {
-		return this._drawPile.slice()
-	}
-
-	get hand() {
-		return this._hand.slice()
-	}
-
-	get discardPile() {
-		return this._discardPile.slice()
-	}
+export class Deck<
+	T extends DeckEntryInitializer = DeckEntryInitializer,
+	HandId = T['handId'],
+	CardID = T['id'],
+	CardEntry = [HandId, CardID]
+> {
+	drawPile: Array<CardEntry>
+	hand: Array<CardEntry>
+	discardPile: Array<CardEntry>
 
 	constructor(
 		cards: Array<T>,
 		public handLimit = HAND_LIMIT
 	) {
-		this._drawPile = cards.map((card) => card.id)
-		this.cards = new Map(cards.map((card) => [card.id, card]))
+		this.drawPile = cards.map(({ handId, id }) => [handId, id] as CardEntry)
+		this.hand = []
+		this.discardPile = []
 	}
 
-	cardById(id: number) {
-		return this.cards.get(id)!
-	}
-
-	cardInHandAt(index: number) {
-		if (index > this._hand.length || index < 0) return undefined
-		const id = this._hand[index]
-		return this.cardById(id)!
+	idInHandAt(index: number) {
+		return (this.hand[index] as any)[1] as CardID
 	}
 
 	drawOne() {
-		if (this._drawPile.length > 0) {
-			if (this._hand.length < this.handLimit) {
-				this._hand.push(this._drawPile.pop()!)
+		if (this.drawPile.length > 0) {
+			if (this.hand.length < this.handLimit) {
+				this.hand.push(this.drawPile.pop()!)
 			} else {
-				this._discardPile.push(this._drawPile.pop()!)
+				this.discardPile.push(this.drawPile.pop()!)
 			}
-		} else if (this._discardPile.length > 0) {
-			this._drawPile = FYshuffle(this._discardPile)
-			this._discardPile = []
+		} else if (this.discardPile.length > 0) {
+			this.drawPile = FYshuffle(this.discardPile)
+			this.discardPile = []
 			this.drawOne()
 		}
 	}
@@ -60,11 +50,11 @@ export class Deck<T extends Card = Card> {
 	reorder(from: number, to: number) {
 		if (from === -1 || to === -1) return
 
-		const result = this.hand
+		const result = this.hand.slice()
 		const [removed] = result.splice(from, 1)
 		result.splice(to, 0, removed)
 
-		this._hand = result
+		this.hand = result
 	}
 
 	/**
@@ -85,9 +75,9 @@ export class Deck<T extends Card = Card> {
 	 */
 	discardAt(position: number) {
 		if (position < 0) return
-		const idToDiscard = this._hand[position]
-		this._hand.splice(position, 1)
-		this._discardPile.push(idToDiscard)
+		const idToDiscard = this.hand[position]
+		this.hand.splice(position, 1)
+		this.discardPile.push(idToDiscard)
 	}
 
 	/**
@@ -95,21 +85,11 @@ export class Deck<T extends Card = Card> {
 	 * @param id
 	 */
 	discard(id: number) {
-		const index = this._hand.findIndex((hid) => id === hid)
+		// TODO: Cannot index CardTuple
+		const index = this.hand.findIndex((entry) => id === (entry as any)[1])
 		if (index >= 0) {
 			this.discardAt(index)
 		}
-	}
-
-	toString() {
-		const drawPileString =
-			this._drawPile.length > 0 ? this._drawPile.map((id) => this.cardById(id)?.name) : 'None'
-		const handString =
-			this._hand.length > 0 ? this._hand.map((id) => this.cardById(id)?.name) : 'None'
-		const discardPileString =
-			this._discardPile.length > 0 ? this._discardPile.map((id) => this.cardById(id)?.name) : 'None'
-
-		return `Draw: ${drawPileString} Hand: ${handString} Discard: ${discardPileString}`
 	}
 }
 

@@ -31,6 +31,18 @@ const dragCursorOffset = ref<{ x: number; y: number }>({ x: 0, y: 0 })
 const cardBreakpoints = ref<Array<readonly [number, number]>>([])
 const cursorOutsideDropZone = ref(false)
 
+const leavingCardVars = ref({
+	'--left-x': '0',
+})
+
+function calcRemovalStartingPoint(el: Element) {
+	const rect = el.getBoundingClientRect()
+	leavingCardVars.value = {
+		'--left-x': rect.left + 'px',
+	}
+}
+
+
 function getListXBrekpoints(elements: Array<HTMLElement>) {
 	const elementRects = elements.map((el) => el.getBoundingClientRect())
 
@@ -109,20 +121,13 @@ onMounted(() => {
 
 				const relativeToCardsX = clientX - firstCardX
 
-				// const slotElements = cardSlots.value
-				// 	.map((el) => el.cardSlot)
-				// 	.sort((a, b) => {
-				// 		const indexA = a!.dataset.cardIndex as unknown as number
-				// 		const indexB = b!.dataset.cardIndex as unknown as number
-				// 		return indexA - indexB
-				// 	}) as Array<HTMLElement>
-
-				// const cardBreakpoints = getListXBrekpoints(slotElements)
 				const index = cardBreakpoints.value.findIndex(
 					([from, to]) => relativeToCardsX > from && relativeToCardsX < to
 				)
 
 				if (index !== -1 && index !== selectedHandIndex.value && dragXDirection !== 0) {
+
+					// TODO: animation breaks with operands swapped
 					roundStore.reorder(selectedHandIndex.value, index)
 				}
 			}
@@ -146,37 +151,41 @@ onMounted(() => {
 </script>
 
 <template>
-		<div
-			ref="cardDropTarget"
-			class="flex col-span-8 overflow-x-hidden"
+	<div
+		ref="cardDropTarget"
+		class="flex col-span-8"
+	>
+		<TransitionGroup
+			move-class="transition-all duration-700"
+			enter-from-class="-translate-x-80 scale-50 opacity-0"
+			enter-active-class="transition-all duration-700"
+			enter-to-class="translate-x-0"
+			leave-from-class="translate-x-[--left-x] lg:w-36 w-20"
+			leave-active-class="transition-all duration-700"
+			leave-to-class="translate-x-80 scale-50 opacity-0 w-0"
+			@before-leave="calcRemovalStartingPoint"
 		>
-			<TransitionGroup
-				move-class="transition-all duration-700"
-				enter-active-class="transition-all duration-700"
-				leave-active-class="transition-all duration-700 absolute"
-				enter-from-class="-translate-x-80 scale-50 opacity-0"
-				enter-to-class="translate-x-0"
-				leave-from-class="translate-x-0 "
-				leave-to-class="translate-x-80 scale-50 opacity-0"
+			<!-- reorder animation from 0th to 1th card doesnt work without card placeholder -->
+			<CardSlot :key="'hack-first'"></CardSlot>
+			<CardSlot
+				v-for="({ card, deckId }, index) of deck.hand"
+				:key="deckId"
+				ref="cardSlots"
+				class="flex justify-center"
+				:style="leavingCardVars"
+				:class="selectedHandIndex === index && cursorOutsideDropZone && 'basis-10'"
+				:data-list-order="index"
 			>
-				<CardSlot
-					v-for="({ card, deckId }, index) of deck.hand"
-					:key="deckId"
-					ref="cardSlots"
-					class="flex justify-center"
-					:class="selectedHandIndex === index && cursorOutsideDropZone && 'basis-10'"
-					:data-list-order="index"
+				<DraggablePlayingCard
+					ref="cards"
+					:card="card"
+					:deck-key="deckId"
+					:class="[selectedHandIndex === index && 'opacity-0 -z-10']"
 				>
-					<DraggablePlayingCard
-						ref="cards"
-						:card="card"
-						:deck-key="deckId"
-						:class="[selectedHandIndex === index && 'opacity-0 -z-10']"
-					>
-					</DraggablePlayingCard>
-				</CardSlot>
-			</TransitionGroup>
-		</div>
+				</DraggablePlayingCard>
+			</CardSlot>
+		</TransitionGroup>
+	</div>
 	<DndOverlayTeleport v-if="selectedHandCard && position.x > -1 && position.y > -1">
 		<PlayingCard
 			v-if="!isCardDragged"

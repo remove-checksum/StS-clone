@@ -31,18 +31,6 @@ const dragCursorOffset = ref<{ x: number; y: number }>({ x: 0, y: 0 })
 const cardBreakpoints = ref<Array<readonly [number, number]>>([])
 const cursorOutsideDropZone = ref(false)
 
-const cardVars = ref({
-	x: '0'
-})
-
-function calcRemovalStartingPoint(el: Element) {
-	const rect = el.getBoundingClientRect()
-
-	cardVars.value = {
-		x: rect.left + 'px'
-	}
-}
-
 function getListXBrekpoints(elements: Array<HTMLElement>) {
 	const elementRects = elements.map((el) => el.getBoundingClientRect())
 
@@ -167,7 +155,6 @@ onMounted(() => {
 			leave-from-class="translate-x-[--left-x] lg:w-36 w-20"
 			leave-active-class="transition-[width,transform,opacity] duration-300"
 			leave-to-class="translate-x-80 scale-50 opacity-0 w-0"
-			@before-leave="calcRemovalStartingPoint"
 		>
 			<!-- reorder animation from 0 to 1 breaks without this placeholder -->
 			<CardSlot :key="'hack-first'"></CardSlot>

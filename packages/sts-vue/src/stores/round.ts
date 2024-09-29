@@ -4,6 +4,7 @@ import { Player, Target } from '@/model/character'
 import { GameRound, Defaults } from '@/model/round'
 import { cardRegistry, type Card } from '@/model/card'
 import type { DeckEntry } from '@/model/deck'
+import { delay } from '@/helpers/delay'
 
 function makeRound(cardRegistry: Map<number, Card>) {
 	const playerHealth = 20
@@ -39,7 +40,7 @@ function makeRound(cardRegistry: Map<number, Card>) {
 	return round
 }
 
-export const CARD_REMOVE_ANIMATION_DURATION_MS = 300
+export const CARD_REMOVE_ANIMATION_DURATION_MS = 150
 
 export type { Card } from '@/model/card'
 
@@ -106,8 +107,11 @@ export const useRoundStore = defineStore('game', () => {
 		return round.deck.idInHandAt(index)
 	}
 
-	function startRound() {
-		round.deck.draw(Defaults.Draw)
+	async function startRound() {
+		for (let i = 0; i < Defaults.Draw; i++) {
+			round.deck.draw(1)
+			await delay(CARD_REMOVE_ANIMATION_DURATION_MS)
+		}
 	}
 
 	function selectEnemy(enemyKey: string) {

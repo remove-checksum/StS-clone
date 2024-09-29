@@ -5,7 +5,7 @@ import { ref, onMounted } from 'vue'
 import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { disableNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview'
 import { assert } from '@/model/assert'
-import { getCardData } from '@/helpers/isCardData'
+import { getCardData } from '@/helpers/dragDataAssert'
 import type { DeckEntry } from '@/model/deck'
 
 type Point = { x: number; y: number }

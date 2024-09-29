@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import BaseButton from './BaseButton.vue'
-import { useRoundStore } from '@/stores/round'
+import { CARD_REMOVE_ANIMATION_DURATION_MS, useRoundStore } from '@/stores/round'
 import { Defaults } from '@/model/round'
 import { useRoute, useRouter } from 'vue-router'
 import { computed, ref, toValue } from 'vue'
@@ -27,20 +27,27 @@ function dec() {
 	drawCount.value--
 }
 
+const drawPending = ref(false)
+
 async function draw() {
 	if (!Number.isInteger(drawCount.value) || drawCount.value === 0) return
 	const change = Math.abs(drawCount.value)
 
+	drawPending.value = true
+
 	if (drawCount.value > 0) {
 		for (let i = 0; i < change; i++) {
+			await delay(CARD_REMOVE_ANIMATION_DURATION_MS)
 			roundStore.round.deck.draw(1)
 		}
 	} else {
 		for (let i = 0; i < change; i++) {
+			await delay(CARD_REMOVE_ANIMATION_DURATION_MS)
 			roundStore.round.deck.discardAt(roundStore.round.deck.hand.length - 1)
 		}
 	}
 
+	drawPending.value = false
 	drawCount.value = 0
 }
 
@@ -78,8 +85,6 @@ function reorder() {
 	}
 
 	roundStore.round.deck.reorder(+from.value, +to.value)
-	from.value = 0
-	to.value = 0
 }
 </script>
 <template>
@@ -96,9 +101,18 @@ function reorder() {
 			<BaseButton @click="discardHand">Discard Hand</BaseButton>
 			<BaseButton @click="discardLast">Discard Last</BaseButton>
 			<div class="flex gap-2">
-				<BaseButton @click="inc">add</BaseButton>
-				<BaseButton @click="dec">remove</BaseButton>
-				<BaseButton @click="draw">Draw
+				<BaseButton
+					:disabled="drawPending"
+					@click="inc"
+				>add</BaseButton>
+				<BaseButton
+					:disabled="drawPending"
+					@click="dec"
+				>remove</BaseButton>
+				<BaseButton
+					:disabled="drawPending"
+					@click="draw"
+				>Draw
 					<div class="">{{ drawCount }}</div>
 				</BaseButton>
 			</div>

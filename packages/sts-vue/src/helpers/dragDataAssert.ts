@@ -19,3 +19,17 @@ export function getCardData(data: Omit<CardData, typeof __CARD_SYMBOL>) {
 export function isCardData(data: Record<string | symbol, unknown>): data is CardData {
 	return Boolean(data[__CARD_SYMBOL])
 }
+
+const __ENEMY_SYMBOL = Symbol('Enemy')
+
+type EnemyData = {
+	[__ENEMY_SYMBOL]: true
+}
+
+export function getEnemyData() {
+	return { [__ENEMY_SYMBOL]: true }
+}
+
+export function isEnemyData(data: Record<string | symbol, unknown>): data is EnemyData {
+	return Boolean(data[__ENEMY_SYMBOL])
+}

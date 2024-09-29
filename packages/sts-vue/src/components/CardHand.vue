@@ -13,7 +13,7 @@ import { storeToRefs } from 'pinia'
 import CardSlot from './CardSlot.vue'
 import { preserveOffsetOnSource } from '@atlaskit/pragmatic-drag-and-drop/element/preserve-offset-on-source'
 import { assert } from '@/model/assert'
-import { isCardData } from '@/helpers/isCardData'
+import { isCardData, isEnemyData } from '@/helpers/dragDataAssert'
 
 const roundStore = useRoundStore()
 const { selectedHandCard, selectedHandIndex, deck } = storeToRefs(roundStore)
@@ -31,17 +31,17 @@ const dragCursorOffset = ref<{ x: number; y: number }>({ x: 0, y: 0 })
 const cardBreakpoints = ref<Array<readonly [number, number]>>([])
 const cursorOutsideDropZone = ref(false)
 
-const leavingCardVars = ref({
-	'--left-x': '0',
+const cardVars = ref({
+	x: '0'
 })
 
 function calcRemovalStartingPoint(el: Element) {
 	const rect = el.getBoundingClientRect()
-	leavingCardVars.value = {
-		'--left-x': rect.left + 'px',
+
+	cardVars.value = {
+		x: rect.left + 'px'
 	}
 }
-
 
 function getListXBrekpoints(elements: Array<HTMLElement>) {
 	const elementRects = elements.map((el) => el.getBoundingClientRect())
@@ -126,7 +126,6 @@ onMounted(() => {
 				)
 
 				if (index !== -1 && index !== selectedHandIndex.value && dragXDirection !== 0) {
-
 					// TODO: animation breaks with operands swapped
 					roundStore.reorder(selectedHandIndex.value, index)
 				}
@@ -139,7 +138,12 @@ onMounted(() => {
 				y: clientY - dragCursorOffset.value.y
 			}
 		},
-		onDrop: () => {
+		onDrop: ({ location }) => {
+			const { dropTargets } = location.current
+			if (dropTargets.some(target => isEnemyData(target.data))) {
+				roundStore.playSelectedCard()
+			}
+
 			isCardDragged.value = false
 			selectCardInHand(-1)
 			dragCursorOffset.value = { x: 0, y: 0 }
@@ -153,34 +157,33 @@ onMounted(() => {
 <template>
 	<div
 		ref="cardDropTarget"
-		class="flex col-span-8"
+		class="col-span-8 flex"
 	>
 		<TransitionGroup
-			move-class="transition-all duration-700"
-			enter-from-class="-translate-x-80 scale-50 opacity-0"
-			enter-active-class="transition-all duration-700"
-			enter-to-class="translate-x-0"
+			move-class="transition-[width,transform]"
+			enter-from-class="-translate-x-80 scale-50 opacity-0 w-0"
+			enter-active-class="transition-[width,transform,opacity] duration-300"
+			enter-to-class="translate-x-0 lg:w-36 w-20"
 			leave-from-class="translate-x-[--left-x] lg:w-36 w-20"
-			leave-active-class="transition-all duration-700"
+			leave-active-class="transition-[width,transform,opacity] duration-300"
 			leave-to-class="translate-x-80 scale-50 opacity-0 w-0"
 			@before-leave="calcRemovalStartingPoint"
 		>
-			<!-- reorder animation from 0th to 1th card doesnt work without card placeholder -->
+			<!-- reorder animation from 0 to 1 breaks without this placeholder -->
 			<CardSlot :key="'hack-first'"></CardSlot>
 			<CardSlot
 				v-for="({ card, deckId }, index) of deck.hand"
 				:key="deckId"
 				ref="cardSlots"
 				class="flex justify-center"
-				:style="leavingCardVars"
-				:class="selectedHandIndex === index && cursorOutsideDropZone && 'basis-10'"
+				:class="[selectedHandIndex === index && cursorOutsideDropZone && 'basis-10', '-ml-4']"
 				:data-list-order="index"
 			>
 				<DraggablePlayingCard
 					ref="cards"
 					:card="card"
 					:deck-key="deckId"
-					:class="[selectedHandIndex === index && 'opacity-0 -z-10']"
+					:class="[selectedHandIndex === index && '-z-10 opacity-0']"
 				>
 				</DraggablePlayingCard>
 			</CardSlot>

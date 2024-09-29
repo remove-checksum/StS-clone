@@ -1,15 +1,19 @@
 import { expect, it, describe, beforeEach } from 'vitest'
-import { Deck } from '@/model/deck'
-import type { Card } from '@/model/card'
+import { Deck, type DeckEntry } from '@/model/deck'
+import { initCardRegistry } from '@/model/card'
 
-const ITEMS_FIXTURE: Array<Card> = ['A', 'B', 'C', 'D', 'E', 'F', 'G'].map((letter, index) => ({
-	id: index,
-	name: letter,
-	description: 'testCard',
-	cost: 0,
-	effect: []
-}))
 const HAND_LIMIT = 5
+const CARDS_FIXTURE = ['A', 'B', 'C', 'D', 'E', 'F', 'G'].map((letter, index) => {
+	return {
+		id: index,
+		name: letter,
+		description: 'testCard',
+		cost: 0,
+		effect: []
+	}
+})
+
+const CARD_REGISTRY_FIXTURE = initCardRegistry(CARDS_FIXTURE)
 
 type CtxWithDeck = { deck: Deck }
 
@@ -18,13 +22,13 @@ describe.sequential('Deck', () => {
 		print(val) {
 			const deck = val as Deck
 
-			function cardNamesOrNone(pile: Array<number>) {
-				return pile.length > 0 ? pile.map((id) => deck.cardById(id).name).join(',') : 'None'
+			function cardNamesOrNone(pile: Array<DeckEntry>) {
+				return pile.length > 0
+					? pile.map(({ id }) => CARD_REGISTRY_FIXTURE.get(id)!.name).join(',')
+					: 'None'
 			}
 
-			return (
-				`Draw: ${cardNamesOrNone(deck.drawPile)} Hand: ${cardNamesOrNone(deck.hand)} Discard: ${cardNamesOrNone(deck.discardPile)}`
-			)
+			return `Draw: ${cardNamesOrNone(deck.drawPile)} Hand: ${cardNamesOrNone(deck.hand)} Discard: ${cardNamesOrNone(deck.discardPile)}`
 		},
 		test(thing) {
 			return thing && thing instanceof Deck
@@ -34,14 +38,14 @@ describe.sequential('Deck', () => {
 	let deck: Deck
 
 	beforeEach(() => {
-		deck = new Deck(ITEMS_FIXTURE, HAND_LIMIT)
+		deck = new Deck(CARDS_FIXTURE, HAND_LIMIT)
 	})
 
 	it<CtxWithDeck>('#draw() draws when draw pile larger than draw count', () => {
 		expect(deck).toMatchInlineSnapshot(`Draw: A,B,C,D,E,F,G Hand: None Discard: None`)
 
 		deck.draw(3)
-		expect(deck.drawPile.length).toBe(ITEMS_FIXTURE.length - 3)
+		expect(deck.drawPile.length).toBe(CARD_REGISTRY_FIXTURE.size - 3)
 		expect(deck.hand.length).toBe(3)
 		expect(deck).toMatchInlineSnapshot(`Draw: A,B,C,D Hand: G,F,E Discard: None`)
 	})
@@ -53,7 +57,7 @@ describe.sequential('Deck', () => {
 		deck.draw(drawCount)
 
 		for (let i = 0; i < discardCount; i++) {
-			deck.discardAt(deck.hand.length - 1)
+			deck.discardAt(0)
 		}
 
 		expect(deck.discardPile.length).toBe(discardCount)
@@ -65,7 +69,7 @@ describe.sequential('Deck', () => {
 		deck.draw(cardMoveCount)
 
 		for (let i = 0; i < cardMoveCount; i++) {
-			deck.discardAt(deck.hand.length - 1)
+			deck.discardAt(0)
 		}
 
 		expect(deck).toMatchInlineSnapshot(`Draw: A,B Hand: None Discard: G,F,E,D,C`)

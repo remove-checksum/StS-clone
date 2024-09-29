@@ -1,31 +1,25 @@
-import type { WithId, WithHandId } from '@/model/card'
+import type { WithId } from '@/model/card'
 
 export const HAND_LIMIT = 10
 
-export type DeckEntryInitializer = WithHandId & WithId
-export type DeckEntry = [DeckEntryInitializer['handId'], DeckEntryInitializer['id']]
+export type DeckEntry = { deckId: ReturnType<typeof crypto.randomUUID>; id: number }
 
-export class Deck<
-	T extends DeckEntryInitializer = DeckEntryInitializer,
-	HandId = T['handId'],
-	CardID = T['id'],
-	CardEntry = [HandId, CardID]
-> {
-	drawPile: Array<CardEntry>
-	hand: Array<CardEntry>
-	discardPile: Array<CardEntry>
+export class Deck {
+	drawPile: Array<DeckEntry>
+	hand: Array<DeckEntry>
+	discardPile: Array<DeckEntry>
 
 	constructor(
-		cards: Array<T>,
+		cards: Array<WithId>,
 		public handLimit = HAND_LIMIT
 	) {
-		this.drawPile = cards.map(({ handId, id }) => [handId, id] as CardEntry)
+		this.drawPile = cards.map(({ id }) => ({ id, deckId: crypto.randomUUID() }))
 		this.hand = []
 		this.discardPile = []
 	}
 
 	idInHandAt(index: number) {
-		return (this.hand[index] as any)[1] as CardID
+		return this.hand[index].id
 	}
 
 	drawOne() {

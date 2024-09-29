@@ -150,10 +150,10 @@ onMounted(() => {
 		<TransitionGroup
 			move-class="transition-[width,transform]"
 			enter-from-class="-translate-x-80 scale-50 opacity-0 w-0"
-			enter-active-class="transition-[width,transform,opacity] duration-300"
+			enter-active-class="transition-[width,transform,opacity] duration-150 z-20"
 			enter-to-class="translate-x-0 lg:w-36 w-20"
-			leave-from-class="translate-x-[--left-x] lg:w-36 w-20"
-			leave-active-class="transition-[width,transform,opacity] duration-300"
+			leave-from-class="translate-x-0 lg:w-36 w-20"
+			leave-active-class="transition-[width,transform,opacity] duration-150"
 			leave-to-class="translate-x-80 scale-50 opacity-0 w-0"
 		>
 			<!-- reorder animation from 0 to 1 breaks without this placeholder -->

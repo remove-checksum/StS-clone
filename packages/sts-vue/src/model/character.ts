@@ -9,6 +9,9 @@ export type TargetStatus = (typeof TargetStatus)[keyof typeof TargetStatus]
 type StatusUpdate = Partial<Record<TargetStatus, number>>
 type StatusEntry = readonly [TargetStatus, number]
 
+// TODO: Derive this type from Target
+export type DisplayTargetStat = TargetStatus | 'health' | 'resource'
+
 export class Target {
 	public statuses: Map<TargetStatus, number>
 	constructor(

@@ -1,21 +1,11 @@
 <script setup lang="ts">
-import Heart from '~icons/ph/heart-straight-fill'
-import Shield from '~icons/ph/shield-fill'
-import HalfDrop from '~icons/pixelarticons/drop-half'
 import StatusIcon from './StatusIcon.vue'
-import type { Player, TargetStatus } from '@/model/character'
-import { type FunctionalComponent } from 'vue'
+import type { Player } from '@/model/character'
 import BaseCard from './BaseCard.vue'
 
 defineProps<{
 	player: Player
 }>()
-
-const iconSizing = 'h-8 w-8 text-blue-400 md:h-12 md:w-12'
-const iconStatusMap: Record<TargetStatus, [FunctionalComponent, string]> = {
-	bleed: [HalfDrop, 'text-red-600'],
-	block: [Shield, 'text-stone-600']
-}
 </script>
 
 <template>
@@ -26,22 +16,16 @@ const iconStatusMap: Record<TargetStatus, [FunctionalComponent, string]> = {
 		<template #content>
 
 			<div class="flex items-start">
-				<StatusIcon :stat="player.health">
-					<Heart
-						class="text-pink-800"
-						:class="iconSizing"
-						:inline="true"
-					/>
-				</StatusIcon>
+				<StatusIcon
+					:stat="'health'"
+					:value="player.health"
+				></StatusIcon>
 				<StatusIcon
 					v-for="[kind, amount] of player.statuses.entries()"
 					:key="kind"
-					:stat="amount"
+					:stat="kind"
+					:value="amount"
 				>
-					<component
-						:is="iconStatusMap[kind][0]"
-						:class="[iconStatusMap[kind][1], iconSizing]"
-					/>
 				</StatusIcon>
 			</div>
 		</template>

@@ -1,13 +1,11 @@
 import { defineStore } from 'pinia'
 import { computed, reactive, ref } from 'vue'
-import { cards } from '@/model/cards.json'
 import { Player, Target } from '@/model/character'
 import { GameRound, Defaults } from '@/model/round'
-import { cardRegistry } from '@/model/card'
+import { cardRegistry, type Card } from '@/model/card'
 import type { DeckEntry } from '@/model/deck'
 
-
-function makeRound() {
+function makeRound(cardRegistry: Map<number, Card>) {
 	const playerHealth = 20
 	const playerResource = 3
 	const player = new Player('Clad', playerHealth, playerHealth, playerResource, playerResource, {
@@ -18,7 +16,7 @@ function makeRound() {
 		['gremlin', new Target('Gremlin')]
 	])
 
-	const [strike, block, heave, scan, heavyStrike, stab, whoops] = cards
+	const [strike, block, heave, scan, heavyStrike, stab, whoops] = cardRegistry.values()
 
 	const roundCards = [
 		strike,
@@ -41,15 +39,17 @@ function makeRound() {
 	return round
 }
 
+export const CARD_REMOVE_ANIMATION_DURATION_MS = 300
+
 export type { Card } from '@/model/card'
 
 export const useRoundStore = defineStore('game', () => {
-	const __roundNonReactive = makeRound()
+	const __roundNonReactive = makeRound(cardRegistry)
 	const round = reactive(__roundNonReactive)
 
 	function mapDeckEntry(entry: DeckEntry) {
-		const [deckId, cardId] = entry
-		return { deckId: deckId, card: round.cardRegistry.get(cardId)! }
+		const { deckId, id } = entry
+		return { deckId, card: round.cardRegistry.get(id)! }
 	}
 
 	const deck = computed(() => {
@@ -69,9 +69,9 @@ export const useRoundStore = defineStore('game', () => {
 	const selectedHandIndex = ref(-1)
 	const selectedHandCard = computed(() => {
 		if (selectedHandIndex.value === -1) return null
-		const [_, cardId] = round.deck.hand[selectedHandIndex.value]
+		const { id } = round.deck.hand[selectedHandIndex.value]
 
-		return cardRegistry.get(cardId)!
+		return cardRegistry.get(id)!
 	})
 
 	function selectCardInHand(index: number) {
@@ -80,7 +80,7 @@ export const useRoundStore = defineStore('game', () => {
 
 	function playSelectedCard() {
 		if (selectedHandIndex.value > -1) {
-			const success = round.tryPlayFromHand(selectedHandIndex.value)
+			round.tryPlayFromHand(selectedHandIndex.value)
 			selectedHandIndex.value = -1
 		}
 	}

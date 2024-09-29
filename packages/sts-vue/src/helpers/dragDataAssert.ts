@@ -6,7 +6,7 @@ const __CARD_SYMBOL = Symbol('Card')
 type CardData = {
 	[__CARD_SYMBOL]: true
 	previousInput: Input
-	deckKey: DeckEntry[0]
+	deckKey: DeckEntry['deckId']
 }
 
 export function getCardData(data: Omit<CardData, typeof __CARD_SYMBOL>) {

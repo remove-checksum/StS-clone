@@ -59,7 +59,7 @@ const cardCountTitle = computed(() => {
 				</h2>
 				<div class="flex flex-row gap-2 flex-wrap">
 					<PlayingCard
-						v-for="(card, index) of cardsByPileKind"
+						v-for="({ card }, index) of cardsByPileKind"
 						:key="index"
 						:card="card"
 						:index="index"

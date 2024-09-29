@@ -1,6 +1,6 @@
 import { Player, Target, TargetStatus } from '@/model/character'
-import { CardEffect, DamageEffect, type Card } from '@/model/card'
-import { Deck, type DeckEntryInitializer } from '@/model/deck'
+import { CardEffect, DamageEffect, type Card, type WithId } from '@/model/card'
+import { Deck } from '@/model/deck'
 
 export const Defaults = {
 	Draw: 4,
@@ -25,7 +25,7 @@ export class GameRound<T extends string> {
 	constructor(
 		public player: Player,
 		public enemies: Map<T, Target>,
-		public deckInitializers: Array<DeckEntryInitializer>,
+		public deckInitializers: Array<WithId>,
 		public cardRegistry: Map<number, Card>
 	) {
 		this.selectedEnemyKey = Array.from(enemies.keys()).at(0)!

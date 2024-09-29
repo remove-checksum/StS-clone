@@ -11,7 +11,7 @@ import type { DeckEntry } from '@/model/deck'
 type Point = { x: number; y: number }
 const props = defineProps<{
 	card: Card
-	deckKey: DeckEntry[0]
+	deckKey: DeckEntry['deckId']
 }>()
 
 const emit = defineEmits<{

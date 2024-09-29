@@ -6,10 +6,6 @@ export type WithId = {
 	readonly id: number
 }
 
-export type WithHandId = {
-	readonly handId: ReturnType<typeof crypto.randomUUID>
-}
-
 export const DamageEffect = {
 	Damage: 'damage',
 	Pierce: 'pierce'
@@ -37,12 +33,12 @@ export type Card = WithId & {
 
 export const cardRegistry = initCardRegistry(cards)
 
-export function initCardRegistry(cards: unknown) {
+export function initCardRegistry(cards: Array<unknown>) {
 	const result = validateCards(cards)
 	return new Map<number, Card>(result.map((card) => [card.id, card]))
 }
 
-export function validateCards(cards: unknown) {
+export function validateCards(cards: Array<unknown>) {
 	const positiveInt = () => v.pipe(v.number(), v.integer(), v.minValue(0))
 
 	const cardEffectSchema = v.array(

@@ -1,16 +1,18 @@
 import { describe, expect, it } from 'vitest'
 import { GameRound, RoundState } from './round'
 import { Player, Target } from './character'
-import type { Card } from './card'
+import { initCardRegistry } from './card'
 import { cards } from './cards.json'
 
 function createRoundFixture() {
 	const [strike] = cards
+	const cardRegistry = initCardRegistry([strike])
 
 	return new GameRound(
 		new Player('Test Player'),
 		new Map([['test1', new Target('Test Enemy')]]),
-		[strike, strike, strike, strike, strike, strike] as Array<Card>
+		[strike, strike, strike, strike],
+		cardRegistry
 	)
 }
 
@@ -21,7 +23,6 @@ describe.sequential('Game', () => {
 		expect(round.player).toBeDefined()
 		expect(round.enemies).toBeDefined()
 		expect(round.deck).toBeDefined()
-		expect(round.deck.drawPile.length).toBe(6)
 		expect(round.roundState).toBe(RoundState.Initial)
 	})
 

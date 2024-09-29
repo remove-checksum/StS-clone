@@ -64,8 +64,7 @@ onMounted(() => roundStore.startRound())
 			></div>
 		</header>
 		<div class="grid grow grid-flow-row grid-cols-2 bg-zinc-400">
-			<div class="p-20">
-				<h3 class="text-center text-2xl">Player</h3>
+			<div class="p-20 grid place-items-center">
 				<PlayerCard :player="roundStore.player" />
 			</div>
 			<div

@@ -50,8 +50,4 @@ onMounted(() => roundStore.startRound())
 		</div>
 		<CardPanel />
 	</main>
-	<div
-		data-overlay-teleport
-		class="pointer-events-none fixed left-0 top-0 h-full w-full"
-	></div>
 </template>

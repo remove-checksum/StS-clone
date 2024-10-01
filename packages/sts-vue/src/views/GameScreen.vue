@@ -1,55 +1,19 @@
 <script setup lang="ts">
 import DebugToggle from '@/components/DebugToggle.vue'
-import { ref, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import { useRoundStore } from '@/stores/round'
 import PlayerCard from '@/components/PlayerCard.vue'
 import EnemyCard from '@/components/EnemyCard.vue'
-import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
-import { assert } from '@/model/assert'
 import CardPanel from '@/components/CardPanel.vue'
 
 const roundStore = useRoundStore()
-
-function isCard(cardData: unknown): cardData is { cardIndex: number } {
-	return (
-		typeof cardData === 'object' &&
-		cardData !== null &&
-		'cardIndex' in cardData &&
-		typeof cardData.cardIndex === 'number'
-	)
-}
-
-const cardPlayDropZone = ref<null | HTMLDivElement>(null)
-const cardInDropZone = ref(false)
-
-onMounted(() => {
-	const cardPlayZoneRef = cardPlayDropZone.value
-	assert(cardPlayZoneRef)
-
-	dropTargetForElements({
-		element: cardPlayZoneRef,
-		onDrop: ({ source }) => {
-			if (isCard(source.data)) {
-				roundStore.selectCardInHand(source.data.cardIndex)
-				roundStore.playSelectedCard()
-			}
-			cardInDropZone.value = false
-		},
-		onDragEnter: () => {
-			cardInDropZone.value = true
-		},
-		onDragLeave: () => {
-			cardInDropZone.value = false
-		}
-	})
-})
 
 onMounted(() => roundStore.startRound())
 </script>
 
 <template>
 	<main class="flex min-h-screen flex-col">
-		<header class="flex h-[12wh] justify-between overflow-x-clip">
+		<header class="flex h-[12wh] justify-between">
 			<div
 				id="cog"
 				class="hover:animate-wiggle h-12 w-12 bg-zinc-200"

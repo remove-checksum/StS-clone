@@ -4,6 +4,10 @@ import { RouterView } from 'vue-router'
 
 <template>
 	<RouterView />
+	<div
+		data-overlay-teleport
+		class="pointer-events-none fixed left-0 top-0 h-full w-full"
+	></div>
 </template>
 
 <style scoped>

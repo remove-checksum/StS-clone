@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { computed, ref, watch, type FunctionalComponent } from 'vue'
 import { type DisplayTargetStat } from '@/model/character';
+// @ts-ignore
 import Heart from '~icons/ph/heart-straight-fill'
+// @ts-ignore
 import Shield from '~icons/ph/shield-fill'
+// @ts-ignore
 import HalfDrop from '~icons/pixelarticons/drop-half'
+// @ts-ignore
 import Circle from '~icons/ph/circle-fill'
 import anime from 'animejs';
 import { assert } from '@/model/assert';

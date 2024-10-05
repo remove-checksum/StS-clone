@@ -28,7 +28,3 @@ coverage
 *.sw?
 
 *.tsbuildinfo
-
-# Build artifacts in /public (required for GitLab Pages)
-public/assets/*
-public/index.html

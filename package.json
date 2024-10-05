@@ -9,7 +9,8 @@
     "build": "pnpm -r --filter='./packages/*' run build",
     "dev": "pnpm -r --parallel --filter='./packages/*' run dev",
     "lint": "pnpm -r --parallel --filter='./packages/*' run lint",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "gl-pages-copy-files": "mkdir ./public && cp -r ./packages/sts-vue/dist/* ./public"
   },
   "keywords": [],
   "author": "",

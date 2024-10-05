@@ -9,7 +9,7 @@ before_script:
 pages:
   script:
     - pnpm --filter='./packages/sts-vue' build
-    - pnpm --filter='./packages/sts-vue' copy-files
+    - pnpm gl-pages-copy-files
   artifacts:
     paths:
       # The folder that contains the files to be exposed at the Page URL

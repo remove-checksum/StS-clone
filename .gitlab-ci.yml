@@ -3,7 +3,8 @@ image: node:lts
 # Functions that should be executed before the build script is run
 before_script:
   - corepack enable
-  - corepack install pnpm
+  - corepack prepare pnpm@latest-9 --activate
+  - pnpm config set store-dir .pnpm-store
   - pnpm --filter='./packages/sts-vue' install
 pages:
   script:

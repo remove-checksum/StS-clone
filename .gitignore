@@ -132,3 +132,4 @@ dist
 
 # Build artifacts in /public (required for GitLab Pages)
 public/*
+!public/_redirects

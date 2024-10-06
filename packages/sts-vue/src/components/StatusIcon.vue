@@ -38,8 +38,6 @@ watch(() => props.value, (current, old) => {
 		})
 	}
 })
-
-
 </script>
 
 <template>

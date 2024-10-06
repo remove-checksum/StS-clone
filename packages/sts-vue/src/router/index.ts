@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import GameScreen from '../views/GameScreen.vue'
+import NotFound from '@/views/NotFound.vue'
 
 const router = createRouter({
 	history: createWebHistory(import.meta.env.BASE_URL),
@@ -11,6 +12,10 @@ const router = createRouter({
 		{
 			path: '/game',
 			component: GameScreen
+		},
+		{
+			path: '/:pathMatch(.*)*',
+			component: NotFound
 		}
 	]
 })
